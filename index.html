@@ -234,6 +234,50 @@
 
   
   .cta-link--disabled{opacity:.65;cursor:default;pointer-events:none;}
+
+  /* Full-screen Bio overlay */
+  .bio-overlay{
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.82);
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .25s ease;
+    z-index: 9999;
+  }
+  .bio-overlay.is-open{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .bio-overlay__frame{
+    width:100%;
+    height:100%;
+    border:0;
+    background:#0b0b0b;
+  }
+  .bio-overlay__close{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:40px;
+    height:40px;
+    border:1px solid rgba(255,255,255,.35);
+    border-radius:999px;
+    background: rgba(0,0,0,.35);
+    color:#fff;
+    font-size:22px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index: 10000;
+  }
+  .bio-overlay__close:hover{
+    border-color: rgba(255,255,255,.6);
+    background: rgba(0,0,0,.55);
+  }
+
 </style>
 </head>
 <body>
@@ -276,7 +320,7 @@
 <p class="intro-line intro-block" id="introText"></p>
 </div>
 <div aria-hidden="true" class="cta-row" id="postTypeCtas">
-<span aria-disabled="true" class="cta-link cta-link--disabled" id="ctaBio" role="button" tabindex="0">PLAY WITH MY LIFE</span>
+<a class="cta-link" href="#" id="ctaBio">PLAY WITH MY LIFE</a>
 <span aria-hidden="true" class="cta-dot" id="ctaSep">·</span>
 <a class="cta-link" href="mailto:epoli.uk@gmail.com" id="ctaContact">GET IN TOUCH <span aria-hidden="true" class="cta-arrow">→</span></a>
 </div></div>
@@ -355,8 +399,8 @@ function typeSequence(){
 window.__startIntroTyping = typeSequence;
 </script>
 <script>
-(function(){
-  const overlay = document.getElementById('loadingVideoOverlay');
+window.addEventListener('DOMContentLoaded', function(){
+const overlay = document.getElementById('loadingVideoOverlay');
   const video = document.getElementById('loadingVideo');
   if(!overlay || !video) return;
 
@@ -449,7 +493,7 @@ window.__startIntroTyping = typeSequence;
       hideOverlay();
     }
   }, 15000);
-})();
+});
 </script>
 <script>
 (function(){
@@ -501,6 +545,57 @@ window.__startIntroTyping = typeSequence;
   // Fallback: if typing already finished for any reason.
   if(document.body.classList.contains('intro-done')) reveal();
 })();
+</script>
+
+
+
+
+  <!-- BIO overlay -->
+  <div class="bio-overlay" id="bioOverlay" aria-hidden="true" role="dialog" aria-label="Bio">
+    <button class="bio-overlay__close" id="bioOverlayClose" aria-label="Close">×</button>
+    <iframe class="bio-overlay__frame" id="bioOverlayFrame" title="Bio" loading="lazy"></iframe>
+  </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  const trigger = document.getElementById('ctaBio');
+  const overlay = document.getElementById('bioOverlay');
+  const frame = document.getElementById('bioOverlayFrame');
+  const closeBtn = document.getElementById('bioOverlayClose');
+  if(!trigger || !overlay || !frame || !closeBtn) return;
+
+  const BIO_URL = 'https://about.enricopoli.com/bio/';
+
+  function openOverlay(){
+    if(!frame.getAttribute('src')) frame.setAttribute('src', BIO_URL);
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+
+  function closeOverlay(){
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    trigger.focus();
+  }
+
+  trigger.addEventListener('click', function(e){
+    e.preventDefault();
+    openOverlay();
+  });
+
+  closeBtn.addEventListener('click', closeOverlay);
+
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) closeOverlay();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && overlay.classList.contains('is-open')) closeOverlay();
+  });
+});
 </script>
 
 </body>
