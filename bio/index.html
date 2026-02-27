@@ -22,7 +22,7 @@
   if (__isAdmin || __isInIframe || __isEditMode || __qs.has("nooverride")) return;
 
 
-  const ABOUT_URL = "https://www.enricopoli.com/about";
+  const ABOUT_URL = "https://about.enricopoli.com";
 
   // ==========================
   // Assets (GitHub raw)
@@ -1285,7 +1285,7 @@ then grew into concept development across industries — and lately into Experie
   mount.appendChild(nav);
 
   // Redirect helper (exit to About)
-  const ABOUT_URL = "https://www.enricopoli.com/about";
+  const ABOUT_URL = "https://about.enricopoli.com";
   function cleanupAndGoAbout() {
     try { stopStoryTimer(); } catch (_) {}
     try { htmlEl.classList.remove("bio-walk-open"); } catch (_) {}
