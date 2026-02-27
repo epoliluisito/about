@@ -1,14 +1,22 @@
-<div class="bio-desktop-only">
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Enrico Walk — Bologna 1950s (Desktop) v43</title>
+  <style>
+    /* Hide desktop experience on mobile */
+    @media (max-width: 768px){
+      .bio-desktop-only{ display:none !important; }
+    }
+  </style>
 </head>
 <body>
 
+<!-- Desktop bundle -->
+<div class="bio-desktop-only"></div>
 <script>
+
 (() => {
   // Desktop-only guard: prevent this script from running on mobile
   if (window.matchMedia("(max-width: 768px)").matches) return;
@@ -921,20 +929,12 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
     });
 
 })();
+
 </script>
 
-</body>
-</html>
-</div>
-
-<style>
-  /* Hide desktop experience on mobile */
-  @media (max-width: 768px){
-    .bio-desktop-only{ display:none !important; }
-  }
-</style>
-
+<!-- Mobile bundle -->
 <script>
+
 (() => {
   // ============================================================
   // 0) HARD GUARDS: do NOT run in Squarespace editor/admin/preview
@@ -1625,4 +1625,8 @@ then grew into concept development across industries — and lately into Experie
     requestAnimationFrame(step);
   });
 })();
+
 </script>
+
+</body>
+</html>
