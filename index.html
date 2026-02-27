@@ -34,7 +34,7 @@
   .loading-video-overlay.fading-out{opacity:0;}
   .loading-video-overlay.hide{display:none;}
   .loading-video-overlay video{
-    position:absolute;inset:0;width:100%;height:100%;
+    position:fixed;inset:0;width:100%;height:100%;
     object-fit:cover;display:block;filter:contrast(1.03);
   }
 
@@ -176,7 +176,12 @@
 
   /* Post-typing CTAs (desktop only) */
   .cta-row{
-    margin-top: 18px;
+    /* Absolutely positioned so revealing it does NOT change layout/centering (prevents snapping). */
+    position:absolute;
+    left:50%;
+    bottom: 44px;
+    transform: translateX(-50%) translateY(6px);
+
     display:flex;
     align-items:center;
     justify-content:center;
@@ -184,14 +189,22 @@
     font-size: 10.5px;
     letter-spacing: .12em;
     text-transform: uppercase;
+
     opacity: 0;
-    transform: translateY(6px);
     transition: opacity .45s ease, transform .45s ease;
-    pointer-events: auto;
+    pointer-events: none;
+    z-index: 50;
   }
   .cta-row.is-visible{
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  body.intro-done .cta-row{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
   }
   .cta-link{
     color: #4ade80;
@@ -341,6 +354,8 @@ function typeSequence(){
     const el = document.getElementById('introText');
     const full = leadLine + "\n\n" + lines[0] + "\n\n" + lines[1];
     typeIntoHTML(el, full, 10, ()=>{
+      document.body.classList.add('intro-done');
+      document.dispatchEvent(new CustomEvent('intro:typingComplete'));
       try{ if(typeof window.__onIntroTypingComplete === 'function') window.__onIntroTypingComplete(); }catch(e){}
     });
     return;
@@ -364,7 +379,15 @@ function typeSequence(){
     }, spd);
   }
 
-  typeInto(leadEl, leadLine, 18, ()=> typeInto(els[0], lines[0], 12, ()=> typeInto(els[1], lines[1], 8)));
+  typeInto(leadEl, leadLine, 18, ()=>{
+    typeInto(els[0], lines[0], 12, ()=>{
+      typeInto(els[1], lines[1], 8, ()=>{
+        document.body.classList.add('intro-done');
+        document.dispatchEvent(new CustomEvent('intro:typingComplete'));
+      });
+    });
+  });
+
 }
 window.__startIntroTyping = typeSequence;
 </script>
@@ -548,6 +571,18 @@ window.__startIntroTyping = typeSequence;
 
   // Exposed hook for the typing script
   window.__onIntroTypingComplete = function(){
+    // Position CTAs just below the typed block (desktop only)
+    try{
+      const anchor = document.getElementById('introText');
+      if(anchor){
+        const r = anchor.getBoundingClientRect();
+        // 12px below the text block, clamped a bit so it doesn't drift off-screen.
+        const top = Math.min(window.innerHeight - 80, r.bottom + 12);
+        ctaRow.style.top = top + 'px';
+        ctaRow.style.bottom = 'auto';
+      }
+    }catch(e){}
+
     // reveal CTAs
     ctaRow.classList.add('is-visible');
     ctaRow.setAttribute('aria-hidden','false');
@@ -555,6 +590,12 @@ window.__startIntroTyping = typeSequence;
     // begin preload as soon as CTAs are visible
     preloadBio();
   };
+
+  window.addEventListener('resize', ()=>{
+    if(ctaRow.classList.contains('is-visible')){
+      try{ window.__onIntroTypingComplete(); }catch(e){}
+    }
+  });
 
   // Click handler
   bioBtn.addEventListener('click', (e)=>{
