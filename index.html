@@ -3,271 +3,259 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Enrico Poli</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>enrico poli — intro</title>
 <style>
-    :root{
-      --nav: hsl(0 0% 65%);
-      --nav-active: #fff;
-      --hdr-pad-top: 27.5px;
-      --hdr-pad-x: 24px;
-      --nav-size: 8.8px;
-      --nav-track: 1.11px;
-      --nav-gap: 13px;
-      --max: 1200px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:#000;color:#fff}
-    body{
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      overflow:hidden;
-      -webkit-font-smoothing:antialiased;
-      text-rendering:geometricPrecision;
-    }
+  :root{
+    --bg:#000;
+    --fg:#eef1f7;
+    --muted:#b4bccb;
 
-    .site-header{
-      position:fixed;
-      inset:0 0 auto 0;
-      z-index:9999;
-      padding: var(--hdr-pad-top) calc(var(--hdr-pad-x) + env(safe-area-inset-right,0px)) 12px calc(var(--hdr-pad-x) + env(safe-area-inset-left,0px));
-      background:transparent;
-      pointer-events:auto;
-    }
-    .hdr-container{max-width:var(--max);margin:0 auto}
-    .site-header__row{display:flex;justify-content:flex-end;align-items:flex-start}
-    .nav{display:flex;align-items:center;gap:var(--nav-gap)}
-    .nav a{
-      font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      font-weight:400;
-      font-size:var(--nav-size);
-      letter-spacing:var(--nav-track);
-      text-transform:uppercase;
-      line-height:1.6;
-      color:var(--nav);
-      text-decoration:none;
-      white-space:nowrap;
-      transition:color .18s ease;
-    }
-    .nav a:hover,.nav a.is-active{color:var(--nav-active)}
+    /* navigation */
+    --nav: hsl(0 0% 65%);
+    --nav-active: #fff;
+    --hdr-pad-top: 27.5px;
+    --hdr-pad-x: 24px;
+    --nav-size: 8.8px;
+    --nav-track: 1.11px;
+    --nav-gap: 13px;
+    --max: 1200px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);
+    font-family:"Avenir Next",Avenir,"Helvetica Neue",Helvetica,Arial,sans-serif}
+  /* intro video overlay */
+  .loading-video-overlay{
+    position:fixed;inset:0;z-index:1;background:#000;
+    display:flex;align-items:center;justify-content:center;
+    opacity:1;visibility:visible;pointer-events:none;
+    transition:opacity 2.5s ease;
+  }
+  .loading-video-overlay.fading-out{opacity:0;}
+  .loading-video-overlay.hide{display:none;}
+  .loading-video-overlay video{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;display:block;filter:contrast(1.03);
+  }
 
-    .nav-toggle{
-      display:none;
-      font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      font-size:var(--nav-size);
-      letter-spacing:var(--nav-track);
-      text-transform:uppercase;
-      color:var(--nav-active);
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(0,0,0,.25);
-      padding:8px 10px;
-      border-radius:999px;
-      cursor:pointer;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .nav-state{position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none}
-    .nav-backdrop{
-      position:fixed;inset:0;background:rgba(0,0,0,.55);
-      opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:9998;
-    }
-    .nav-panel{
-      position:fixed;top:0;right:0;height:100vh;width:min(320px,86vw);
-      padding:72px 22px 22px;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
-      transform:translateX(110%);transition:transform .22s ease;z-index:10000;
-      border-left:1px solid rgba(255,255,255,.08);
-    }
-    .nav-panel a{
-      display:block;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08);
-      font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      font-size:12px;letter-spacing:var(--nav-track);text-transform:uppercase;
-      color:var(--nav);text-decoration:none;
-    }
-    .nav-panel a.is-active{color:var(--nav-active)}
-    .nav-panel__close{
-      position:fixed;top:18px;right:18px;z-index:10001;
-      border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff;
-      padding:8px 10px;border-radius:999px;cursor:pointer;
-      font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      font-size:var(--nav-size);letter-spacing:var(--nav-track);text-transform:uppercase;
-    }
-    .nav-state:checked ~ .nav-backdrop{opacity:1;pointer-events:auto}
-    .nav-state:checked ~ .nav-panel{transform:translateX(0)}
+  /* liquid background */
+  #liquid{
+    position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;pointer-events:none;
+    background:#000;
+  }
+  .ui-noise{
+    position:fixed; inset:0; pointer-events:none; z-index:1;
+    background:
+      radial-gradient(1200px 800px at 50% 45%, rgba(255,255,255,.02), transparent 70%),
+      radial-gradient(1400px 1000px at 50% 50%, transparent 55%, rgba(0,0,0,.22) 100%);
+    opacity:.9;
+  }
 
-    .snap-wrap{
-      height:100vh;
-      overflow-y:auto;
-      overflow-x:hidden;
-      scroll-snap-type:y mandatory;
-      scroll-behavior:smooth;
-      -webkit-overflow-scrolling:touch;
-    }
-    .page-block{
-      position:relative;
-      height:100svh;
-      min-height:100vh;
-      scroll-snap-align:start;
-      scroll-snap-stop:always;
-      background:#000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .cover-link{
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%, -50%);
-      z-index:3;
-      opacity:0;
-      transition: opacity .22s ease;
-      padding: 18px 26px;
-      min-width: min(420px, calc(100vw - 84px));
-      min-height: 120px;
-      /* hotspot rectangle */
-      display:inline-flex;
-      flex-direction:row;
-      align-items:baseline;
-      justify-content:center;
-      gap:0.45em;
-      color:#fff;
-      text-decoration:none;
-      font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      font-size: clamp(12px, 1.15vw, 17px);
-      line-height:1.15;
-      letter-spacing:0.05em;
-      font-weight:500;
-      text-transform:uppercase;
-      text-shadow: 0 1px 10px rgba(0,0,0,.30);
-      /* keep title + separator + subtitle on one line (desktop) */
-      width:auto;
-      max-width: calc(100% - 48px);
-      text-align:center;
-      white-space:nowrap;
-      flex-wrap:nowrap;
-    }
-    .cover-link .title-main{
-      /* ensure title is visually heavier even if the font lacks many weights */
-      font-weight:600;
-      font-variation-settings: 'wght' 600;
-      -webkit-text-stroke: 0.35px rgba(255,255,255,0.85);
-      text-shadow: 0 1px 10px rgba(0,0,0,.30);
-    }
-    .cover-link .title-sub{
-      /* force subtitle to read thinner than the title across browsers/fonts */
-      font-weight:300;
-      font-variation-settings: 'wght' 300;
-      -webkit-text-stroke: 0;
-      opacity:0.92;
-    }
-    .cover-link:visited,
-    .cover-link:hover,
-    .cover-link:active{
-      color:#fff;
-      text-decoration:none;
-    }
-    @media (max-width:860px){
-      .cover-link{
-        font-size: clamp(12px, 3.2vw, 15px);
-        letter-spacing:0.04em;
-        gap:0.35em;
-        max-width: calc(100% - 32px);
-        /* allow wrapping on small screens if needed */
-        white-space:normal;
-        flex-wrap:wrap;
-      }
-    }
-
-.page-block img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center center;
-      display:block;
-      user-select:none;
-      -webkit-user-drag:none;
-      pointer-events:none;
-    }
+  /* intro text */
+  .intro{
+    position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-52%) translateY(-50px);
+    z-index:2;width:min(920px,88vw);
+    text-align:left;pointer-events:auto;
+  }
+  .intro-copy{
+    display:grid;gap:12px;max-width:860px;margin:0 auto;
+    text-align:left;justify-items:stretch;
+    pointer-events:none;
+  }
 
 
-    /* Hide scrollbar (keep scrolling/snap behavior) */
-    .snap-wrap{
-      -ms-overflow-style:none;      /* IE/Edge */
-      scrollbar-width:none;         /* Firefox */
-    }
-    .snap-wrap::-webkit-scrollbar{  /* Chrome/Safari */
-      width:0;
-      height:0;
-      display:none;
-    }
+/* desktop: use a single fixed text block so typing only reveals content (no snapping/reflow) */
+#introText{display:none; white-space:pre-wrap;}
+@media (max-width: 860px){
+  #introText{display:none;}
+}
+@media (min-width: 861px){
+  .intro-copy{display:block; height:16em; overflow:hidden;}
+  #introLine0,#introLine1,#introLine2{display:none;}
+  #introText{display:block; margin:0; width:100%;}
+}
+
+.intro-line{
+    margin:0;color:var(--fg);
+    font-size:clamp(11px,.85vw,13px);
+    font-weight:300;line-height:1.55;
+    letter-spacing:.08em;text-transform:uppercase;
+    min-height:1.55em;text-align:left;width:100%;
+    /* force true horizontal text rendering (no vertical/rotated writing modes) */
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    transform: none;
+  }
+  .intro-line.intro-lead-line{margin-bottom:12px;font-weight:500;}
+  .caret{display:inline-block;width:8px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* header + menu */
+  .site-header{
+    position:fixed;
+    inset:0 0 auto 0;
+    z-index:9999;
+    padding: var(--hdr-pad-top) calc(var(--hdr-pad-x) + env(safe-area-inset-right,0px)) 12px calc(var(--hdr-pad-x) + env(safe-area-inset-left,0px));
+    background:transparent;
+    pointer-events:auto;
+  }
+  .hdr-container{max-width:var(--max);margin:0 auto}
+  .site-header__row{display:flex;justify-content:flex-end;align-items:flex-start}
+  .nav{display:flex;align-items:center;gap:var(--nav-gap)}
+  .nav a{
+    font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    font-weight:400;
+    font-size:var(--nav-size);
+    letter-spacing:var(--nav-track);
+    text-transform:uppercase;
+    line-height:1.6;
+    color:var(--nav);
+    text-decoration:none;
+    white-space:nowrap;
+    transition:color .18s ease;
+  }
+  .nav a:hover,.nav a.is-active{color:var(--nav-active)}
+
+  .nav-toggle{
+    display:none;
+    font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    font-size:var(--nav-size);
+    letter-spacing:var(--nav-track);
+    text-transform:uppercase;
+    color:var(--nav-active);
+    border:1px solid rgba(255,255,255,.18);
+    background:rgba(0,0,0,.25);
+    padding:8px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav-state{position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none}
+  .nav-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);
+    opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:9998;
+  }
+  .nav-panel{
+    position:fixed;top:0;right:0;height:100vh;width:min(320px,86vw);
+    padding:72px 22px 22px;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
+    transform:translateX(110%);transition:transform .22s ease;z-index:10000;
+    border-left:1px solid rgba(255,255,255,.08);
+  }
+  .nav-panel a{
+    display:block;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08);
+    font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    font-size:12px;letter-spacing:var(--nav-track);text-transform:uppercase;
+    color:var(--nav);text-decoration:none;
+  }
+  .nav-panel a.is-active{color:var(--nav-active)}
+  .nav-panel__close{
+    position:fixed;top:18px;right:18px;z-index:10001;
+    border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff;
+    padding:8px 10px;border-radius:999px;cursor:pointer;
+    font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    font-size:var(--nav-size);letter-spacing:var(--nav-track);text-transform:uppercase;
+  }
+  .nav-state:checked ~ .nav-backdrop{opacity:1;pointer-events:auto}
+  .nav-state:checked ~ .nav-panel{transform:translateX(0)}
+
+  /* Mobile menu behavior (mobile only) */
+  @media (max-width: 860px){
+    .nav{display:none;}
+    .nav-toggle{display:inline-flex; align-items:center; justify-content:center;}
+    /* mobile: keep original vertical centering */
+    .intro{ transform: translate(-50%,-52%); }
+
+  }
+  /* Ensure the off-canvas elements never appear on desktop */
+  @media (min-width: 861px){
+    .nav-state, .nav-backdrop, .nav-panel, .nav-panel__close{display:none !important;}
+  }
 
 
 
-    .page-nav-arrows{
-      position:fixed;
-      inset:0;
-      z-index:9997;
-      pointer-events:none;
-    }
-    .page-nav-arrow{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      width:auto;
-      height:auto;
-      user-select:none;
-      pointer-events:none;
-      opacity:.92;
-      filter:drop-shadow(0 0 2px rgba(255,255,255,.18));
+  /* Post-typing CTAs (desktop only) */
+  .cta-row{
+    margin-top: 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 12px;
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .45s ease, transform .45s ease;
+    pointer-events: auto;
+  }
+  .cta-row.is-visible{
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .cta-link{
+    color: #4ade80;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(74,222,128,.22);
+    padding-bottom: 2px;
+  }
+  .cta-link:hover,
+  .cta-link:focus-visible{
+    color:#4ade80;
+    border-bottom-color: rgba(74,222,128,.55);
+    outline: none;
+  }
+  .cta-dot{
+    color: rgba(255,255,255,.85);
+    transform: translateY(-0.5px);
+  }
+  .cta-arrow{
+    margin-left: 4px;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
 
-      /* match menu typography */
-      font-family:"Futura PT","futura-pt","Futura","Avenir Next","Avenir",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      font-weight:300;
-      font-size:var(--nav-size);
-      letter-spacing:var(--nav-track);
-      text-transform:uppercase;
-      line-height:1.2;
-      color:var(--nav);
-      white-space:nowrap;
-    }
-    .page-nav-arrow::before,
-    .page-nav-arrow::after{ display:none; }
-    
-    .page-nav-arrow--up{ top:10px; }
-    .page-nav-arrow--down{ bottom:10px; }
-    .page-nav-arrow[hidden]{ display:none !important; }
-    @media (max-width:860px){
-      .page-nav-arrow{ font-size:var(--nav-size); }
-      .page-nav-arrow::before,
-      .page-nav-arrow::after{ top:3px; width:9px; }
-      .page-nav-arrow--up{ top:8px; }
-      .page-nav-arrow--down{ bottom:8px; }
-    }
+  /* Experience overlay (desktop only) */
+  .client-experience-layer{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: stretch;
+    justify-content: stretch;
+    background: rgba(0,0,0,.92);
+  }
+  .client-experience-layer.show.full{ display: flex; }
+  .experience-overlay__frame{
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #000;
+  }
+  .experience-overlay__close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:36px;
+    height:36px;
+    border:1px solid rgba(255,255,255,.8);
+    background:rgba(0,0,0,.35);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font:400 22px/1 Arial, sans-serif;
+    cursor:pointer;
+    z-index:20001;
+    border-radius:0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
 
-    @media (max-width:860px){
-      :root{--hdr-pad-x:20px;--hdr-pad-top:22px}
-      .nav{display:none}
-      .nav-toggle{display:flex;align-items:center}
-    }
-  
-
-    /* FILMS-style hover: hotspot rectangle reveals title and fades image */
-    .page-block .cover-link:hover,
-    .page-block .cover-link:focus-visible{
-      opacity:1;
-    }
-    .page-block .cover-link:hover + img,
-    .page-block .cover-link:focus-visible + img{
-      opacity:0.5;
-    }
-    .page-block img{
-      transition: opacity .22s ease;
-    }
-    .cover-link .title-sep{
-      font-weight:400;
-      opacity:0.92;
-      line-height:1;
-    }
-
+  @media (max-width: 860px){
+    /* keep mobile basic: no CTAs / no overlay trigger */
+    #postTypeCtas{display:none !important;}
+  }
 </style>
 </head>
 <body>
@@ -275,110 +263,317 @@
 <div class="hdr-container">
 <div class="site-header__row">
 <nav aria-label="Primary navigation" class="nav">
-<a data-key="whatdoido" href="https://www.enricopoli.com/home">WHAT DO I ACTUALLY DO</a>
-<a data-key="xd" href="/">XD</a>
-<a data-key="films" href="https://films.enricopoli.com/">FILMS</a>
+<a data-key="whatdoido" href="https://www.enricopoli.com/what-do-i-actually-do">WHAT DO I ACTUALLY DO</a>
+<a data-key="xd" href="https://xd.enricopoli.com/">XD</a>
+<a data-key="films" href="https://films.enricopoli.com/" rel="noopener">FILMS</a>
 <a data-key="dreamlog" href="https://www.enricopoli.com/_-dream-log">_ DREAM LOG</a>
 <a data-key="journal" href="https://www.enricopoli.com/journal">JOURNAL</a>
-<a data-key="about" href="https://www.enricopoli.com/about">ABOUT</a>
+<a class="is-active" data-key="about" href="https://www.enricopoli.com/about">ABOUT</a>
 </nav>
 <label aria-expanded="false" aria-label="Open menu" class="nav-toggle" for="navState" id="navToggle" role="button">MENU</label>
 </div>
 </div>
 </header>
-<main aria-label="Projects" class="snap-wrap" role="main">
-<section aria-label="Shadows in the Valley cover" class="page-block" id="page_block_01">
-<a aria-label="Open Shadows in the Valley project" class="cover-link" href="https://xd.enricopoli.com/projects/shadows_in_the_valley/">
-<span class="title-main">SHADOWS IN THE VALLEY</span><span class="title-sep">·</span><span class="title-sub">a listening system</span>
-</a>
-<img alt="Shadows in the Valley cover" decoding="async" loading="eager" src="./source/shadows_in_the_valley_cover.webp"/>
-</section>
-<section aria-label="Beyond the Book cover" class="page-block" id="page_block_02">
-<a aria-label="Open Era Ora Beyond the Book project" class="cover-link" href="https://xd.enricopoli.com/projects/beyond_the_book/">
-<span class="title-main">BEYOND THE BOOK</span><span class="title-sep">·</span><span class="title-sub">on the future of work</span>
-</a>
-<img alt="Beyond the Book cover" decoding="async" loading="lazy" src="./source/beyond_the_book_cover.webp"/>
-</section>
-</main>
-<div aria-hidden="true" class="page-nav-arrows">
-<span class="page-nav-arrow page-nav-arrow--up" hidden="" id="pageNavUp">scroll up for previous project</span>
-<span class="page-nav-arrow page-nav-arrow--down" hidden="" id="pageNavDown">scroll down for next project</span>
-</div>
-<input aria-hidden="true" class="nav-state" id="navState" type="checkbox"/>
-<label aria-hidden="true" class="nav-backdrop" for="navState"></label>
-<aside aria-hidden="true" class="nav-panel" id="navPanel">
-<label class="nav-panel__close" for="navState" id="navClose" role="button">CLOSE</label>
-<a data-key="whatdoido" href="https://www.enricopoli.com/home">WHAT DO I ACTUALLY DO</a>
-<a data-key="xd" href="/">XD</a>
-<a data-key="films" href="https://films.enricopoli.com/">FILMS</a>
-<a data-key="dreamlog" href="https://www.enricopoli.com/_-dream-log">_ DREAM LOG</a>
-<a data-key="journal" href="https://www.enricopoli.com/journal">JOURNAL</a>
-<a data-key="about" href="https://www.enricopoli.com/about">ABOUT</a>
+<input aria-hidden="true" class="nav-state" id="navState" tabindex="-1" type="checkbox"/>
+<div aria-hidden="true" class="nav-backdrop"></div>
+<aside aria-label="Mobile menu" class="nav-panel">
+<label aria-label="Close menu" class="nav-panel__close" for="navState" role="button">CLOSE</label>
+<a href="https://www.enricopoli.com/what-do-i-actually-do">WHAT DO I ACTUALLY DO</a>
+<a href="https://xd.enricopoli.com/">XD</a>
+<a href="https://films.enricopoli.com/" rel="noopener">FILMS</a>
+<a href="https://www.enricopoli.com/_-dream-log">_ DREAM LOG</a>
+<a href="https://www.enricopoli.com/journal">JOURNAL</a>
+<a class="is-active" href="https://www.enricopoli.com/about">ABOUT</a>
 </aside>
+<div aria-hidden="true" class="loading-video-overlay" id="loadingVideoOverlay">
+<video autoplay="" id="loadingVideo" muted="" playsinline="" preload="auto">
+<source src="https://raw.githubusercontent.com/epoliluisito/xd_portfolio/main/source/enrico_pixel.mp4" type="video/mp4"/>
+</video>
+</div>
+<div class="intro" id="introBlock">
+<div class="intro-copy">
+<p class="intro-line intro-lead-line" id="introLine0"></p>
+<p class="intro-line" id="introLine1"></p>
+<p class="intro-line" id="introLine2"></p>
+<p class="intro-line intro-block" id="introText"></p>
+
+
+</div>
+<div aria-hidden="true" class="cta-row" id="postTypeCtas">
+<a class="cta-link" href="#" id="ctaBio" role="button">PLAY WITH MY LIFE</a>
+<span aria-hidden="true" class="cta-dot" id="ctaSep">·</span>
+<a class="cta-link" href="mailto:epoli.uk@gmail.com" id="ctaContact">GET IN TOUCH <span aria-hidden="true" class="cta-arrow">→</span></a>
+</div></div>
 <script>
-    (function(){
-      document.querySelectorAll('[data-key="xd"]').forEach(a => a.classList.add('is-active'));
-      const t = document.getElementById('navToggle');
-      const p = document.getElementById('navPanel');
-      const s = document.getElementById('navState');
-      function sync(){
-        const open = !!(s && s.checked);
-        if (p) p.setAttribute('aria-hidden', open ? 'false' : 'true');
-        if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
-      }
-      if (s) s.addEventListener('change', sync);
-      sync();
+function typeSequence(){
+  const leadLine = `I AM A NARRATIVE AND EXPERIENCE DESIGNER.`;
+  const lines = [
+    `I BUILD NARRATIVE AND CONCEPTUAL SYSTEMS THAT HELP ORGANIZATIONS UNDERSTAND COMPLEXITY, ANTICIPATE CHANGE, AND DESIGN COHERENT FUTURE DIRECTIONS.`,
+    `MY PRACTICE LIVES WHERE STORY, STRATEGY, AND EMERGING TECHNOLOGIES CONVERGE. I WORK BY TRANSFORMING SCATTERED INFORMATION - DATA, SIGNALS, BEHAVIOURS, CONTRADICTIONS - INTO PATTERNS THAT REVEAL WHAT'S ACTUALLY HAPPENING BENEATH THE SURFACE.`
+  ];
 
-      const wrap = document.querySelector('.snap-wrap');
-      const blocks = wrap ? Array.from(wrap.querySelectorAll('.page-block')) : [];
-      const upBtn = document.getElementById('pageNavUp');
-      const downBtn = document.getElementById('pageNavDown');
-      let currentIndex = 0;
+  const isDesktop = window.matchMedia("(min-width: 861px)").matches;
 
-      function updateArrows(){
-        if (!blocks.length) return;
-        if (upBtn) upBtn.hidden = currentIndex <= 0;
-        if (downBtn) downBtn.hidden = currentIndex >= blocks.length - 1;
-      }
+  const escapeHTML = (s)=> s
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
 
-      if (wrap && blocks.length){
-        if ('IntersectionObserver' in window){
-          const io = new IntersectionObserver(function(entries){
-            let best = null;
-            for (const entry of entries){
-              if (!entry.isIntersecting) continue;
-              if (!best || entry.intersectionRatio > best.intersectionRatio){
-                best = entry;
-              }
-            }
-            if (best){
-              const i = blocks.indexOf(best.target);
-              if (i !== -1){
-                currentIndex = i;
-                updateArrows();
-              }
-            }
-          }, { root: wrap, threshold: [0.35, 0.55, 0.75] });
-          blocks.forEach(b => io.observe(b));
-        } else {
-          const onScroll = function(){
-            const mid = wrap.scrollTop + (wrap.clientHeight * 0.5);
-            let bestIdx = 0;
-            let bestDist = Infinity;
-            blocks.forEach(function(b, i){
-              const center = b.offsetTop + (b.offsetHeight * 0.5);
-              const dist = Math.abs(center - mid);
-              if (dist < bestDist){ bestDist = dist; bestIdx = i; }
-            });
-            currentIndex = bestIdx;
-            updateArrows();
-          };
-          wrap.addEventListener('scroll', onScroll, { passive: true });
-          onScroll();
-        }
-        updateArrows();
+  function typeIntoHTML(el, txt, spd, done){
+    let i = 0;
+    el.innerHTML = '';
+    const k = setInterval(()=>{
+      i += 1;
+      const vis = txt.slice(0,i);
+      el.innerHTML = escapeHTML(vis).replace(/\n/g,'<br>') + '<span class="caret">▌</span>';
+      if(i >= txt.length){
+        clearInterval(k);
+        el.innerHTML = escapeHTML(txt).replace(/\n/g,'<br>');
+        setTimeout(()=> done && done(), 120);
       }
-    })();
-  </script>
+    }, spd);
+  }
+
+  // Desktop: one single fixed block (no multi-paragraph snapping).
+  if(isDesktop){
+    const el = document.getElementById('introText');
+    const full = leadLine + "\n\n" + lines[0] + "\n\n" + lines[1];
+    typeIntoHTML(el, full, 10, ()=>{
+      try{ if(typeof window.__onIntroTypingComplete === 'function') window.__onIntroTypingComplete(); }catch(e){}
+    });
+    return;
+  }
+
+  // Mobile: keep the original 3-line flow.
+  const leadEl = document.getElementById('introLine0');
+  const els = [document.getElementById('introLine1'), document.getElementById('introLine2')];
+
+  function typeInto(el, txt, spd, done){
+    let i = 0;
+    el.innerHTML = '';
+    const k = setInterval(()=>{
+      i += 1;
+      el.innerHTML = txt.slice(0,i) + '<span class="caret">▌</span>';
+      if(i >= txt.length){
+        clearInterval(k);
+        el.textContent = txt;
+        setTimeout(()=> done && done(), 120);
+      }
+    }, spd);
+  }
+
+  typeInto(leadEl, leadLine, 18, ()=> typeInto(els[0], lines[0], 12, ()=> typeInto(els[1], lines[1], 8)));
+}
+window.__startIntroTyping = typeSequence;
+</script>
+<script>
+(function(){
+  const overlay = document.getElementById('loadingVideoOverlay');
+  const video = document.getElementById('loadingVideo');
+  if(!overlay || !video) return;
+
+  let hidden = false;
+
+  function startIntroTypingOnce(){
+    if(window.__introTypingStarted) return;
+    window.__introTypingStarted = true;
+    if (typeof window.__startIntroTyping === 'function') window.__startIntroTyping();
+  }
+
+  const INTRO_FADE_MS = 2500;
+  let fadeArmed = false;
+
+  function beginFadeOut(){
+    if(hidden || fadeArmed) return;
+    fadeArmed = true;
+    // Start typing first, then begin fading a moment later so the text is already writing as the video fades.
+    startIntroTypingOnce();
+    const FADE_AFTER_TYPING_LEAD_MS = 120;
+    setTimeout(()=>{
+      if(hidden) return;
+      overlay.classList.add('fading-out');
+    }, FADE_AFTER_TYPING_LEAD_MS);
+    setTimeout(()=>{
+      if(hidden) return;
+      hidden = true;
+      overlay.remove();
+    }, INTRO_FADE_MS + FADE_AFTER_TYPING_LEAD_MS + 40);
+  }
+
+  function hideOverlay(delayMs = 0){
+    if(hidden) return;
+    const doHide = ()=>{
+      if(hidden) return;
+      beginFadeOut();
+    };
+    if (delayMs > 0) setTimeout(doHide, delayMs);
+    else doHide();
+  }
+
+  // Text starts just before the intro video fades, so both overlap visibly
+
+  // Hide overlay when the video ends (fade is usually armed before this via metadata timing)
+  video.addEventListener('ended', ()=>hideOverlay(0), { once:true });
+
+  // Fallbacks
+  video.addEventListener('error', ()=>{
+    startIntroTypingOnce();
+    setTimeout(hideOverlay, 200);
+  });
+
+  const playAttempt = video.play();
+  if (playAttempt && typeof playAttempt.catch === 'function') {
+    playAttempt.catch(()=>{
+      // If autoplay fails, start text anyway and remove overlay soon
+      startIntroTypingOnce();
+      setTimeout(hideOverlay, 900);
+    });
+  }
+
+  // If file is slow/unavailable, don't block text
+  setTimeout(()=>{
+    if (video.readyState < 2) {
+      startIntroTypingOnce();
+      hideOverlay();
+    }
+  }, 2200);
+
+  // Hard safety: respect actual video duration when available, with a small tail for flicker/end frame
+  const safetyTailMs = 900;
+  function armDurationSafety(){
+    if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+    const durationMs = Math.ceil(video.duration * 1000);
+    const fadeStartMs = Math.max(0, durationMs - INTRO_FADE_MS);
+    setTimeout(beginFadeOut, fadeStartMs);
+    const totalMs = durationMs + safetyTailMs;
+    setTimeout(()=>{
+      startIntroTypingOnce();
+      hideOverlay();
+    }, totalMs);
+  }
+  if (video.readyState >= 1) armDurationSafety();
+  else video.addEventListener('loadedmetadata', armDurationSafety, { once:true });
+
+  // Absolute fallback only if metadata never arrives
+  setTimeout(()=>{
+    if (!hidden && video.readyState < 1) {
+      startIntroTypingOnce();
+      hideOverlay();
+    }
+  }, 15000);
+})();
+</script>
+<script>
+(function(){
+  const state = document.getElementById('navState');
+  const toggle = document.getElementById('navToggle');
+  const backdrop = document.querySelector('.nav-backdrop');
+  const panel = document.querySelector('.nav-panel');
+
+  if(!state || !toggle) return;
+
+  function syncAria(){
+    const open = !!state.checked;
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  if(backdrop){
+    backdrop.addEventListener('click', () => { state.checked = false; syncAria(); });
+  }
+
+  if(panel){
+    panel.addEventListener('click', (e) => {
+      const a = e.target && e.target.closest && e.target.closest('a');
+      if(a){ state.checked = false; syncAria(); }
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && state.checked){
+      state.checked = false; syncAria();
+    }
+  });
+
+  state.addEventListener('change', syncAria);
+  syncAria();
+})();
+</script><script>
+(function(){
+  const isDesktop = window.matchMedia("(min-width: 861px)").matches;
+  if(!isDesktop) return;
+
+  const ctaRow  = document.getElementById('postTypeCtas');
+  const bioBtn  = document.getElementById('ctaBio');
+  const layer   = document.getElementById('bioLayer');
+  const frame   = document.getElementById('bioFrame');
+  const closeBtn= document.getElementById('bioClose');
+
+  const BIO_URL = 'https://about.enricopoli.com/bio/';
+
+  if(!ctaRow || !bioBtn || !layer || !frame || !closeBtn) return;
+
+  let preloaded = false;
+
+  function preloadBio(){
+    if(preloaded) return;
+    preloaded = true;
+
+    // Warm-up the connection (best-effort)
+    try{
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = BIO_URL;
+      document.head.appendChild(link);
+    }catch(e){}
+
+    // Start loading the experience off-screen to reduce perceived click latency.
+    // Keep it in DOM so most browsers will fetch it, but invisible until opened.
+    frame.src = BIO_URL;
+  }
+
+  function openBio(){
+    preloadBio();
+    layer.classList.add('show','full');
+    layer.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBio(){
+    layer.classList.remove('show','full');
+    layer.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+
+  // Exposed hook for the typing script
+  window.__onIntroTypingComplete = function(){
+    // reveal CTAs
+    ctaRow.classList.add('is-visible');
+    ctaRow.setAttribute('aria-hidden','false');
+
+    // begin preload as soon as CTAs are visible
+    preloadBio();
+  };
+
+  // Click handler
+  bioBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    openBio();
+  });
+
+  closeBtn.addEventListener('click', closeBio);
+  layer.addEventListener('click', (e)=>{ if(e.target === layer) closeBio(); });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && layer.classList.contains('show')) closeBio();
+  });
+})();
+</script>
+
+<div aria-hidden="true" class="client-experience-layer" id="bioLayer">
+<button aria-label="Close" class="experience-overlay__close" id="bioClose">×</button>
+<iframe class="experience-overlay__frame" id="bioFrame" loading="eager" referrerpolicy="no-referrer" title="Bio experience"></iframe>
+</div>
 </body>
 </html>
