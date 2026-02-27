@@ -26,8 +26,9 @@
   const __qs = new URLSearchParams(window.location.search);
   const __isAdmin = window.location.pathname.startsWith("/config");
   const __isInIframe = (window.self !== window.top);
-  const __isEditMode = document.body.classList.contains("sqs-edit-mode") || document.documentElement.classList.contains("sqs-edit-mode");
-  if (__isAdmin || __isInIframe || __isEditMode || __qs.has("nooverride")) return;
+    const __allowEmbed = __qs.has(\"embed\") || __qs.has(\"overlay\");
+const __isEditMode = document.body.classList.contains("sqs-edit-mode") || document.documentElement.classList.contains("sqs-edit-mode");
+  if (__isAdmin || __isEditMode || __qs.has("nooverride") || (__isInIframe && !__allowEmbed)) return;
 
 
   const ABOUT_URL = "https://about.enricopoli.com";

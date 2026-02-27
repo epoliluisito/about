@@ -564,7 +564,7 @@ window.addEventListener('DOMContentLoaded', function(){
   const closeBtn = document.getElementById('bioOverlayClose');
   if(!trigger || !overlay || !frame || !closeBtn) return;
 
-  const BIO_URL = 'bio.html';
+  const BIO_URL = '/bio_embed_ok.html?embed=1';
 
   function openOverlay(){
     if(!frame.getAttribute('src')) frame.setAttribute('src', BIO_URL);
