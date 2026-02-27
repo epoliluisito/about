@@ -209,13 +209,12 @@
   .cta-link{
     color: #4ade80;
     text-decoration: none;
-    border-bottom: 1px solid rgba(74,222,128,.22);
-    padding-bottom: 2px;
-  }
+    border-bottom: none;
+    padding-bottom: 0;
+    }
   .cta-link:hover,
   .cta-link:focus-visible{
     color:#4ade80;
-    border-bottom-color: rgba(74,222,128,.55);
     outline: none;
   }
   .cta-dot{
@@ -531,11 +530,11 @@ window.__startIntroTyping = typeSequence;
   const bioBtn  = document.getElementById('ctaBio');
   const layer   = document.getElementById('bioLayer');
   const frame   = document.getElementById('bioFrame');
-  const closeBtn= document.getElementById('bioClose');
-
   const BIO_URL = 'https://about.enricopoli.com/bio/';
 
-  if(!ctaRow || !bioBtn || !layer || !frame || !closeBtn) return;
+  const nextBtn = document.getElementById('bioNext');
+
+  if(!ctaRow || !bioBtn || !layer || !frame || !nextBtn) return;
 
   let preloaded = false;
 
@@ -603,8 +602,14 @@ window.__startIntroTyping = typeSequence;
     openBio();
   });
 
-  closeBtn.addEventListener('click', closeBio);
-  layer.addEventListener('click', (e)=>{ if(e.target === layer) closeBio(); });
+  // Top-right NEXT: open the experience URL in a new tab
+  nextBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    try{ window.open(BIO_URL, '_blank', 'noopener'); }catch(err){ window.location.href = BIO_URL; }
+    closeBio();
+  });
+
+layer.addEventListener('click', (e)=>{ if(e.target === layer) closeBio(); });
 
   document.addEventListener('keydown', (e)=>{
     if(e.key === 'Escape' && layer.classList.contains('show')) closeBio();
@@ -613,7 +618,7 @@ window.__startIntroTyping = typeSequence;
 </script>
 
 <div aria-hidden="true" class="client-experience-layer" id="bioLayer">
-<button aria-label="Close" class="experience-overlay__close" id="bioClose">×</button>
+<button aria-label="Next" class="experience-overlay__close" id="bioNext">NEXT</button>
 <iframe class="experience-overlay__frame" id="bioFrame" loading="eager" referrerpolicy="no-referrer" title="Bio experience"></iframe>
 </div>
 </body>
