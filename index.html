@@ -286,6 +286,12 @@
     background: rgba(0,0,0,.55);
   }
 
+
+  /* Mobile-only: hide top-right bio overlay close (use in-bio close instead) */
+  @media (max-width: 860px){
+    .bio-overlay__close{display:none !important;}
+  }
+
 </style>
 </head>
 <body>
@@ -586,8 +592,17 @@ window.addEventListener('DOMContentLoaded', function(){
     overlay.classList.remove('is-open');
     overlay.setAttribute('aria-hidden','true');
     document.body.style.overflow = '';
-    trigger.focus();
+    // Stop the embedded experience and avoid accidental state persistence
+    try{ frame.setAttribute('src',''); }catch(e){}
+    try{ trigger && trigger.focus && trigger.focus(); }catch(e){}
   }
+
+  // Allow the embedded bio (iframe) to request closing the overlay
+  window.addEventListener('message', function(event){
+    const data = event && event.data;
+    if(!data || data.type !== 'CLOSE_BIO_OVERLAY') return;
+    if(overlay.classList.contains('is-open')) closeOverlay();
+  });
 
   trigger.addEventListener('click', function(e){
     e.preventDefault();
