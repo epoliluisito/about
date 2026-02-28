@@ -176,6 +176,14 @@
     }
     .intro-line{ text-align:left; }
 
+    /* Mobile-only fixes */
+    /* 1) Uniform weight for the whole typed text (including the lead line) */
+    .intro-line{ font-weight:300; }
+    .intro-line.intro-lead-line{ font-weight:300; }
+
+    /* 2) Keep CTAs under the typed text (no overlap) */
+    .cta-row{ position:static; top:0; margin-top:16px; justify-content:flex-start; }
+
     opacity: 0;
     transform: translateY(10px);
     transition: opacity .6s ease, transform .6s ease;
