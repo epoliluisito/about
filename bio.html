@@ -948,7 +948,24 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
     document.body.classList.contains("sqs-edit-mode") ||
     document.documentElement.classList.contains("sqs-edit-mode");
 
-  if (kill || isAdmin || isInIframe || isEditMode) return;
+  // Mobile runs inside the public overlay iframe on the live site.
+  // Only bail out for Squarespace editor/admin iframes.
+  let isEditorIframe = false;
+  if (isInIframe) {
+    try {
+      const topPath = (window.top.location && window.top.location.pathname) ? window.top.location.pathname : "";
+      const topHost = (window.top.location && window.top.location.hostname) ? window.top.location.hostname : "";
+      isEditorIframe =
+        topPath.startsWith("/config") ||
+        topPath.startsWith("/admin") ||
+        topHost.includes("squarespace.com");
+    } catch (e) {
+      // If we cannot read window.top (cross-origin), assume editor/admin preview.
+      isEditorIframe = true;
+    }
+  }
+
+  if (kill || isAdmin || isEditMode || isEditorIframe) return;
 
   // Mobile-only guard
   if (!window.matchMedia("(max-width: 768px)").matches) return;
