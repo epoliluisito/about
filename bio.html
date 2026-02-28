@@ -620,6 +620,14 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   let last = performance.now();
 
   function redirectToAbout() {
+    // If we are running inside the About overlay iframe, request the parent to close it.
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "CLOSE_BIO_OVERLAY" }, "*");
+        return;
+      }
+    } catch (_) {}
+    // Fallback: direct navigation when not embedded.
     window.location.href = ABOUT_URL;
   }
 
@@ -1308,6 +1316,14 @@ then grew into concept development across industries — and lately into Experie
     try { htmlEl.classList.remove("bio-walk-open"); } catch (_) {}
     try { style.remove(); } catch (_) {}
     try { mount.remove(); } catch (_) {}
+    // If embedded (mobile overlay iframe), ask the parent to close it.
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "CLOSE_BIO_OVERLAY" }, "*");
+        return;
+      }
+    } catch (_) {}
+    // Fallback: direct navigation when not embedded.
     window.location.href = ABOUT_URL;
   }
 
