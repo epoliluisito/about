@@ -163,6 +163,50 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   `;
   document.body.appendChild(mount);
 
+  // Keyboard focus helper (required in many iframe/overlay contexts)
+  mount.tabIndex = 0;
+  mount.setAttribute("role", "application");
+
+  const __tryFocus = () => {
+    try { mount.focus({ preventScroll: true }); }
+    catch (_e) { try { mount.focus(); } catch (_e2) {} }
+  };
+
+  // Minimal UI hint (removed on first interaction)
+  const __focusHint = document.createElement("div");
+  __focusHint.id = "enrico-walk-focus-hint";
+  __focusHint.textContent = "Click to activate controls";
+  __focusHint.style.cssText = [
+    "position:absolute",
+    "top:10px",
+    "left:50%",
+    "transform:translateX(-50%)",
+    "padding:8px 10px",
+    "background:rgba(0,0,0,0.55)",
+    "color:#fff",
+    "font:12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif",
+    "border:1px solid rgba(255,255,255,0.18)",
+    "border-radius:10px",
+    "letter-spacing:0.2px",
+    "z-index:2147480001",
+    "pointer-events:none",
+    "opacity:1",
+    "transition:opacity 200ms ease"
+  ].join(";");
+  mount.appendChild(__focusHint);
+
+  let __focusHintHidden = false;
+  const __hideFocusHint = () => {
+    if (__focusHintHidden) return;
+    __focusHintHidden = true;
+    if (!__focusHint || !__focusHint.isConnected) return;
+    __focusHint.style.opacity = "0";
+    setTimeout(() => { try { __focusHint.remove(); } catch(_e) {} }, 260);
+  };
+
+  // Best-effort: focus on first frame (may be ignored without user gesture)
+  requestAnimationFrame(__tryFocus);
+
   // Ensure Squarespace header stays on top (if present)
   (function liftSquarespaceHeader(){
     const headerEls = [
@@ -541,6 +585,7 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   const keys = { left:false, right:false };
 
   window.addEventListener("keydown", (e) => {
+    __hideFocusHint();
     const k = e.key;
     if (k === "ArrowLeft") keys.left = true;
     if (k === "ArrowRight") keys.right = true;
@@ -664,6 +709,9 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   document.addEventListener("pointerdown", (e) => {
     // Only react if the experience is mounted
     if (!mount.isConnected) return;
+
+    __tryFocus();
+    __hideFocusHint();
 
     const t = e.target;
 
@@ -1132,6 +1180,50 @@ then grew into concept development across industries — and lately into Experie
     touch-action: manipulation;
   `;
   document.body.appendChild(mount);
+
+  // Keyboard focus helper (required in many iframe/overlay contexts)
+  mount.tabIndex = 0;
+  mount.setAttribute("role", "application");
+
+  const __tryFocus = () => {
+    try { mount.focus({ preventScroll: true }); }
+    catch (_e) { try { mount.focus(); } catch (_e2) {} }
+  };
+
+  // Minimal UI hint (removed on first interaction)
+  const __focusHint = document.createElement("div");
+  __focusHint.id = "enrico-walk-focus-hint";
+  __focusHint.textContent = "Click to activate controls";
+  __focusHint.style.cssText = [
+    "position:absolute",
+    "top:10px",
+    "left:50%",
+    "transform:translateX(-50%)",
+    "padding:8px 10px",
+    "background:rgba(0,0,0,0.55)",
+    "color:#fff",
+    "font:12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif",
+    "border:1px solid rgba(255,255,255,0.18)",
+    "border-radius:10px",
+    "letter-spacing:0.2px",
+    "z-index:2147480001",
+    "pointer-events:none",
+    "opacity:1",
+    "transition:opacity 200ms ease"
+  ].join(";");
+  mount.appendChild(__focusHint);
+
+  let __focusHintHidden = false;
+  const __hideFocusHint = () => {
+    if (__focusHintHidden) return;
+    __focusHintHidden = true;
+    if (!__focusHint || !__focusHint.isConnected) return;
+    __focusHint.style.opacity = "0";
+    setTimeout(() => { try { __focusHint.remove(); } catch(_e) {} }, 260);
+  };
+
+  // Best-effort: focus on first frame (may be ignored without user gesture)
+  requestAnimationFrame(__tryFocus);
 
   // Canvas above bubble+text, below buttons
   const canvas = document.createElement("canvas");
