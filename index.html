@@ -22,7 +22,7 @@
     --max: 1200px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);
+  html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-y:auto;background:var(--bg);color:var(--fg);
     font-family:"Avenir Next",Avenir,"Helvetica Neue",Helvetica,Arial,sans-serif}
   /* intro video overlay */
   .loading-video-overlay{
@@ -54,7 +54,8 @@
   /* intro text */
   .intro{
     position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-52%) translateY(-50px);
+    /* shift entire intro block upward */
+    transform:translate(-50%,-52%) translateY(-170px);
     z-index:2;width:min(920px,88vw);
     text-align:left;pointer-events:auto;
   }
@@ -163,8 +164,15 @@
   @media (max-width: 860px){
     .nav{display:none;}
     .nav-toggle{display:inline-flex; align-items:center; justify-content:center;}
-    /* mobile: keep original vertical centering */
-    .intro{ transform: translate(-50%,-52%); }
+    /* mobile: allow page to scroll while keeping the same visual starting position */
+    .intro{
+      position:relative;
+      left:auto; top:auto;
+      transform:none;
+      margin:0 auto;
+      padding-top: calc(50vh - 170px);
+      padding-bottom: 120px;
+    }
 
     /* Mobile-only typography alignment overrides */
     .intro{ text-align:left; }
@@ -182,7 +190,7 @@
     .intro-line.intro-lead-line{ font-weight:500; }
 
     /* 2) Keep CTAs under the typed text (no overlap) */
-    .cta-row{ position:static; top:0; margin-top:66px; justify-content:flex-start; }
+    .cta-row{ position:static; top:0; margin-top:54px; justify-content:flex-start; }
 
     opacity: 0;
     transform: translateY(10px);
@@ -190,7 +198,7 @@
     pointer-events: none;
     z-index: 50;
   }
-  .cta-row{
+   .cta-row{
     /* Positioned under the main intro text (center screen area). */
     left:auto;
     bottom:auto;
@@ -210,7 +218,7 @@
     pointer-events: none;
     z-index: 50;
     position: relative;
-    top: -40px;
+    top: -55px;
 }
 
   .cta-row.is-visible{
@@ -337,7 +345,52 @@
 <a class="cta-link" href="#" id="ctaBio">PLAY WITH MY LIFE</a>
 <span aria-hidden="true" class="cta-dot" id="ctaSep">·</span>
 <a class="cta-link" href="mailto:epoli.uk@gmail.com" id="ctaContact">GET IN TOUCH <span aria-hidden="true" class="cta-arrow">→</span></a>
-</div></div>
+</div>
+
+<div class="client-block" id="clientBlock" aria-hidden="true" style="position:absolute; left:50%; width:min(860px,100%); top:calc(100% + 4px); text-align:left;">
+  <style>
+  .client-block{
+    opacity:0;
+    transform: translate3d(-50%,10px,0);
+    transition: opacity .6s ease, transform .6s ease;
+    pointer-events:none;
+    text-align:left;
+    margin:0 auto;
+  }
+  .client-block.is-visible{
+    opacity:1;
+    transform: translate3d(-50%,0,0);
+    pointer-events:auto;
+  }
+  /* match typed text weight on mobile */
+  @media (max-width: 860px){
+    .client-block .client-line{font-weight:500 !important;}
+  }
+</style>
+
+  <div class="client-heading" style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; line-height:1.6; color:#4ade80; font-family:inherit; font-weight:400;">
+    SELECTED CLIENTS
+  </div>
+  <br>
+  <div class="client-line" style="font-size:clamp(11px,.85vw,13px); font-weight:300; line-height:1.55; letter-spacing:.08em; text-transform:uppercase; color:rgba(238,241,247,0.92); text-align:left">
+    GOOGLE&nbsp;&nbsp;·&nbsp;&nbsp;DEUTSCHE BANK&nbsp;&nbsp;·&nbsp;&nbsp;NIKE&nbsp;&nbsp;·&nbsp;&nbsp;MERCEDES-BENZ&nbsp;&nbsp;·&nbsp;&nbsp;AMAZON&nbsp;&nbsp;·&nbsp;&nbsp;META&nbsp;&nbsp;·&nbsp;&nbsp;PROCTER &amp; GAMBLE (VICKS)&nbsp;&nbsp;·&nbsp;&nbsp;NATUZZI ITALIA&nbsp;&nbsp;·&nbsp;&nbsp;ARPER&nbsp;&nbsp;·&nbsp;&nbsp;INTRINSIC (ALPHABET)&nbsp;&nbsp;·&nbsp;&nbsp;CAMERA NAZIONALE DELLA MODA ITALIANA&nbsp;&nbsp;·&nbsp;&nbsp;CADBURY UK&nbsp;&nbsp;·&nbsp;&nbsp;NEWS UK
+  </div>
+  <br>
+  <div class="client-heading" style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; line-height:1.6; color:#4ade80; font-family:inherit; font-weight:400;">
+    AGENCIES / STUDIOS
+  </div>
+  <br>
+  <div class="client-line" style="font-size:clamp(11px,.85vw,13px); font-weight:300; line-height:1.55; letter-spacing:.08em; text-transform:uppercase; color:rgba(238,241,247,0.92); text-align:left">
+    OGILVY UK, ITALIA&nbsp;&nbsp;·&nbsp;&nbsp;DROGA5&nbsp;&nbsp;·&nbsp;&nbsp;BBH LONDON&nbsp;&nbsp;·&nbsp;&nbsp;WUNDERMAN THOMPSON&nbsp;&nbsp;·&nbsp;&nbsp;VCCP&nbsp;&nbsp;·&nbsp;&nbsp;LUCKY GENERALS&nbsp;&nbsp;·&nbsp;&nbsp;SAATCHI &amp; SAATCHI LONDON&nbsp;&nbsp;·&nbsp;&nbsp;M&amp;C SAATCHI LONDON&nbsp;&nbsp;·&nbsp;&nbsp;LEAGAS DELANEY LONDON&nbsp;&nbsp;·&nbsp;&nbsp;MCCANN HEALTH
+  </div>
+<br>
+<div class="client-heading" style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; line-height:1.6; color:#4ade80; font-family:inherit; font-weight:400;">
+  AWARDS &amp; RECOGNITION
+</div>
+<img src="https://about.enricopoli.com/assets/awards.webp" alt="Awards and recognition" style="display:block; width:100%; height:auto; max-width:100%; border:0; margin-top:6px;"/>
+
+</div>
+</div>
 <script>
 function typeSequence(){
   const leadLine = `I AM A NARRATIVE AND EXPERIENCE DESIGNER.`;
@@ -432,18 +485,13 @@ const overlay = document.getElementById('loadingVideoOverlay');
   function beginFadeOut(){
     if(hidden || fadeArmed) return;
     fadeArmed = true;
-    // Start typing first, then begin fading a moment later so the text is already writing as the video fades.
-    startIntroTypingOnce();
-    const FADE_AFTER_TYPING_LEAD_MS = 120;
-    setTimeout(()=>{
-      if(hidden) return;
-      overlay.classList.add('fading-out');
-    }, FADE_AFTER_TYPING_LEAD_MS);
+    // Fade out the overlay; typing starts independently (in sync with video start).
+    overlay.classList.add('fading-out');
     setTimeout(()=>{
       if(hidden) return;
       hidden = true;
       overlay.remove();
-    }, INTRO_FADE_MS + FADE_AFTER_TYPING_LEAD_MS + 40);
+    }, INTRO_FADE_MS + 40);
   }
 
   function hideOverlay(delayMs = 0){
@@ -468,6 +516,9 @@ const overlay = document.getElementById('loadingVideoOverlay');
   });
 
   const playAttempt = video.play();
+
+  // Start typing at the same time as the intro animation begins
+  startIntroTypingOnce();
   if (playAttempt && typeof playAttempt.catch === 'function') {
     playAttempt.catch(()=>{
       // If autoplay fails, start text anyway and remove overlay soon
@@ -552,6 +603,15 @@ const overlay = document.getElementById('loadingVideoOverlay');
   function reveal(){
     ctas.classList.add('is-visible');
     ctas.setAttribute('aria-hidden','false');
+
+    const client = document.getElementById('clientBlock');
+    if(client){
+      // Fade in after CTAs finish their transition
+      window.setTimeout(function(){
+        client.classList.add('is-visible');
+        client.setAttribute('aria-hidden','false');
+      }, 280);
+    }
   }
 
   document.addEventListener('intro:typingComplete', reveal, { once:true });
