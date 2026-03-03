@@ -190,7 +190,7 @@
     .intro-line.intro-lead-line{ font-weight:500; }
 
     /* 2) Keep CTAs under the typed text (no overlap) */
-    .cta-row{ position:static; top:0; margin-top:74px; justify-content:flex-start; }
+    .cta-row{ position:static; top:0; margin-top:94px; justify-content:flex-start; }
 
     opacity: 0;
     transform: translateY(10px);
@@ -217,8 +217,6 @@
     transition: opacity .6s ease, transform .6s ease;
     pointer-events: none;
     z-index: 50;
-    position: relative;
-    top: -55px;
 }
 
   .cta-row.is-visible{
@@ -306,7 +304,8 @@
 /* MOBILE-ONLY adjustments (desktop untouched) */
 @media (max-width: 860px){
   /* Move CTAs slightly lower */
-  #postTypeCtas{ margin-top:66px !important; }
+  #postTypeCtas{ /* margin-top controlled by .cta-row in the main mobile block */
+  }
 
   /* Make the client/agency/awards block flow naturally under CTAs */
   #clientBlock{
