@@ -190,7 +190,13 @@
     .intro-line.intro-lead-line{ font-weight:500; }
 
     /* 2) Keep CTAs under the typed text (no overlap) */
-    .cta-row{ position:static; top:0; margin-top:54px; justify-content:flex-start; }
+    .cta-row{ position:static; top:0; margin-top:94px; justify-content:flex-start; }
+
+    /* 3) Client/Awards sections: keep desktop behavior but flow correctly on mobile */
+    #clientBlock{position:static !important; left:auto !important; top:auto !important; width:100% !important; text-align:left; margin-top:22px;}
+    .client-block{transform: translate3d(0,10px,0) !important;}
+    .client-block.is-visible{transform: translate3d(0,0,0) !important;}
+
 
     opacity: 0;
     transform: translateY(10px);
