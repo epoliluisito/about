@@ -466,10 +466,12 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   const soccerOverlay = document.createElement("div");
   soccerOverlay.style.cssText = `
     position: absolute;
-    inset: 0;
+    inset: 52px;
     z-index: 2147481500;
     background: #000;
     display: none;
+    border: 2px solid rgba(255,255,255,0.25);
+    box-shadow: 0 0 0 4px #000, 0 0 0 6px rgba(255,255,255,0.06);
   `;
 
   const soccerIframe = document.createElement("iframe");
@@ -486,36 +488,38 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   soccerCloseBtn.textContent = "✕";
   soccerCloseBtn.style.cssText = `
     position: absolute;
-    top: 14px;
-    right: 18px;
-    z-index: 10;
-    background: rgba(0,0,0,0.55);
-    border: 1px solid rgba(255,255,255,0.28);
-    color: rgba(255,255,255,0.88);
+    top: 16px;
+    right: 16px;
+    z-index: 2147481600;
+    display: none;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.22);
+    color: rgba(255,255,255,0.55);
     font-family: ui-monospace, monospace;
-    font-size: 16px;
+    font-size: 13px;
     line-height: 1;
-    padding: 7px 13px;
-    border-radius: 7px;
+    padding: 5px 10px;
     cursor: pointer;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    transition: background 140ms ease;
+    letter-spacing: 1px;
+    transition: color 120ms ease, border-color 120ms ease;
   `;
   soccerCloseBtn.addEventListener("pointerenter", () => {
-    soccerCloseBtn.style.background = "rgba(0,0,0,0.80)";
+    soccerCloseBtn.style.color = "rgba(255,255,255,0.9)";
+    soccerCloseBtn.style.borderColor = "rgba(255,255,255,0.55)";
   });
   soccerCloseBtn.addEventListener("pointerleave", () => {
-    soccerCloseBtn.style.background = "rgba(0,0,0,0.55)";
+    soccerCloseBtn.style.color = "rgba(255,255,255,0.55)";
+    soccerCloseBtn.style.borderColor = "rgba(255,255,255,0.22)";
   });
 
   soccerOverlay.appendChild(soccerIframe);
-  soccerOverlay.appendChild(soccerCloseBtn);
   mount.appendChild(soccerOverlay);
+  mount.appendChild(soccerCloseBtn);
 
   function openSoccerOverlay() {
     soccerIframe.src = "soccer/index.html";
     soccerOverlay.style.display = "block";
+    soccerCloseBtn.style.display = "block";
     // Hide popup while game is open
     goalPopup.style.opacity = "0";
     goalVideo.pause();
@@ -523,6 +527,7 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
 
   function closeSoccerOverlay() {
     soccerOverlay.style.display = "none";
+    soccerCloseBtn.style.display = "none";
     soccerIframe.src = "";
   }
 
