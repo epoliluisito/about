@@ -55,8 +55,8 @@ button:hover{background:linear-gradient(180deg,#202020,#121212)}
 <div id="s-load" class="screen"><div class="tag">Loading match data</div><div class="title" style="font-size:34px">Kick Off</div><div class="sub" id="loadText">Preparing pitch...</div></div>
 <div id="s-intro" class="screen hidden"><div class="tag">A tribute to sensible world of soccer</div><div class="title">Kick Off</div><div class="sub">One match. One chance. Imola, 2003.</div><div class="vs"><div class="teamBox"><div class="n" style="color:#ff6666">Imolese FC</div><div class="s">Allievi Nazionali 2003/2004</div></div><div class="sep">VS</div><div class="teamBox"><div class="n" style="color:#f3d559">Rest of the World</div><div class="s">All-Time Legends</div></div></div><div class="btnRow"><button class="gold" id="toLineups">See lineups & select side</button></div></div>
 <div id="s-lineups" class="screen hidden"><div class="box"><div class="head">Choose your side</div><div class="lineups"><div><div class="colTitle" style="color:#ff6666">Imolese FC — 4-4-2</div><div id="lineupImo"></div></div><div><div class="colTitle" style="color:#f3d559">Rest of the World — 4-3-3</div><div id="lineupRow"></div></div></div><div class="btnRow" style="margin-top:20px"><button class="red" id="playImo">Play as Imolese FC</button><button class="gold" id="playRow">Play as Rest of the World</button></div></div></div>
-<div id="s-rules" class="screen hidden"><div class="box" style="max-width:700px"><div class="head">Match rules</div><div class="note">Arrows or WASD to move. Space is the only active button: the ball goes where the player is facing, and hold time sets kick strength. The controlled player now changes only by ball proximity.<br><br>Kickoff shape keeps every player in their own half, and both sides have been reworked to look for passes, support runs, tackles and shots in a more football-like way.</div><div class="legend"><div class="dot d-red"></div><div>Imolese outfield kit</div><div class="dot d-gold"></div><div>Rest of the World outfield kit</div><div class="dot d-white"></div><div>Ball</div><div class="dot d-blue"></div><div>Keepers have distinct kits</div></div><div class="small">2 minute match · one-match structure preserved · one-button football controls · auto player switching by proximity</div><div class="btnRow" style="margin-top:22px"><button class="gold" id="kickOffBtn">Kick Off</button></div></div></div>
-<div id="wrap" class="hidden"><div id="gameShell"><div id="hudTop"><div class="teamL">Imolese FC</div><div id="centerHud"><div id="time">00:00</div><div id="score">0-0</div><div id="phase">Kick Off</div></div><div class="teamR">Rest of the World</div></div><div id="gameFrame"><canvas id="gameCanvas" width="320" height="180"></canvas></div><div id="status"></div></div></div>
+<div id="s-rules" class="screen hidden"><div class="box" style="max-width:700px"><div class="head">Match rules</div><div class="note">Arrows or WASD to move. Space is the only active button: it always kicks the ball in the direction the current player is facing, whether it is loose or at a player's feet. Hold time sets kick strength. There is no teammate targeting. The controlled player now changes only by ball proximity.<br><br>Kickoff shape keeps every player in their own half, kicks now travel much further, and both sides attack more directly with deeper runs, earlier shots and stronger support movement into scoring areas.</div><div class="legend"><div class="dot d-red"></div><div>Imolese outfield kit</div><div class="dot d-gold"></div><div>Rest of the World outfield kit</div><div class="dot d-white"></div><div>Ball</div><div class="dot d-blue"></div><div>Keepers have distinct kits</div></div><div class="small">2 minute match · one-match structure preserved · one-button football controls · auto player switching by proximity</div><div class="btnRow" style="margin-top:22px"><button class="gold" id="kickOffBtn">Kick Off</button></div></div></div>
+<div id="wrap" class="hidden"><div id="gameShell"><div id="hudTop"><div class="teamL">Imolese FC</div><div id="centerHud"><div id="time">00:00</div><div id="score">0-0</div><div id="phase">Kick Off</div></div><div class="teamR">Rest of the World</div></div><div id="gameFrame"><canvas id="gameCanvas" width="320" height="180" tabindex="0"></canvas></div><div id="status"></div></div></div>
 <div id="overlayFlash">Goal!</div>
 <div id="s-end" class="screen hidden"><div class="tag">Full time</div><div class="title" id="finalScore">0-0</div><div class="sub" id="finalText">Draw</div><div class="btnRow" style="margin-top:30px"><button class="gold" id="playAgain">Play again</button></div></div>
 
@@ -96,6 +96,8 @@ function fitCanvas(){const scale=Math.max(2,Math.floor(Math.min(innerWidth/VIEW_
 function focusGame(){
   if(document.activeElement && typeof document.activeElement.blur==='function') document.activeElement.blur();
   canvas.setAttribute('tabindex','0');
+  document.body.setAttribute('tabindex','-1');
+  document.body.focus({preventScroll:true});
   canvas.focus({preventScroll:true});
   window.focus();
 }
@@ -108,42 +110,60 @@ function norm(x,y){const d=Math.hypot(x,y)||1; return {x:x/d,y:y/d,d}}
 function teamDir(team){return team===0?1:-1}
 function goalPosts(side){const y1=FIELD.y+(FIELD.h-GOAL.width)/2, y2=y1+GOAL.width, x=side===0?FIELD.x:FIELD.x+FIELD.w; return {x,y1,y2}}
 
-const keys={}; let pendingUserKick=null, spaceDownAt=0, spaceIsHeld=false;
+const keys={}; let pendingUserKick=null, spaceDownAt=0, spaceIsHeld=false, spaceKickPlayer=null;
 function eventCode(e){return e.code||e.key||String(e.which||e.keyCode||'');}
 function isSpaceEvent(e){return e.code==='Space' || e.key===' ' || e.key==='Spacebar' || e.key==='Space' || e.which===32 || e.keyCode===32;}
 function isArrowEvent(e){return (e.code && e.code.startsWith('Arrow')) || ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);}
-window.addEventListener('keydown',e=>{
+function beginSpaceHold(){
+  if(spaceIsHeld) return;
+  spaceDownAt=performance.now();
+  spaceIsHeld=true;
+  keys.Space=true;
+  spaceKickPlayer=(game && game.teams && typeof game.userTeam==='number') ? getControlledPlayer() : null;
+}
+function endSpaceHold(){
+  keys.Space=false;
+  if(spaceIsHeld){
+    const held=Math.max(40,performance.now()-spaceDownAt);
+    pendingUserKick={held, source:'release', actor:spaceKickPlayer, expires:performance.now()+220};
+    attemptUserKick(held, spaceKickPlayer, true);
+  }
+  spaceDownAt=0;
+  spaceIsHeld=false;
+  spaceKickPlayer=null;
+}
+function onAnyKeyDown(e){
   const code=eventCode(e);
   if(isSpaceEvent(e)){
-    if(!spaceIsHeld){
-      spaceDownAt=performance.now();
-      spaceIsHeld=true;
-    }
-    keys.Space=true;
+    if(!e.repeat) beginSpaceHold();
     e.preventDefault();
+    e.stopPropagation();
   }
   keys[code]=true;
   if(isArrowEvent(e)) e.preventDefault();
-},{passive:false,capture:true});
-window.addEventListener('keyup',e=>{
+}
+function onAnyKeyUp(e){
   const code=eventCode(e);
   keys[code]=false;
   if(isSpaceEvent(e)){
-    keys.Space=false;
+    endSpaceHold();
     e.preventDefault();
-    if(spaceIsHeld){
-      pendingUserKick={held:Math.max(40,performance.now()-spaceDownAt)};
-      spaceDownAt=0;
-      spaceIsHeld=false;
-    }
+    e.stopPropagation();
   }
   if(isArrowEvent(e)) e.preventDefault();
-},{passive:false,capture:true});
+}
+window.addEventListener('keydown',onAnyKeyDown,{passive:false,capture:true});
+window.addEventListener('keyup',onAnyKeyUp,{passive:false,capture:true});
+document.addEventListener('keydown',onAnyKeyDown,{passive:false,capture:true});
+document.addEventListener('keyup',onAnyKeyUp,{passive:false,capture:true});
+document.body.addEventListener('keydown',onAnyKeyDown,{passive:false,capture:true});
+document.body.addEventListener('keyup',onAnyKeyUp,{passive:false,capture:true});
 window.addEventListener('blur',()=>{
   Object.keys(keys).forEach(k=>keys[k]=false);
   keys.Space=false;
   spaceDownAt=0;
   spaceIsHeld=false;
+  spaceKickPlayer=null;
   pendingUserKick=null;
 });
 function showScreen(name){Object.values(screens).forEach(el=>el.classList.add('hidden')); screens[name].classList.remove('hidden');}
@@ -162,7 +182,7 @@ function resetMatch(){
   game.teams=[IMO.map(p=>makePlayer(0,...p)),ROW.map(p=>makePlayer(1,...p))];
   game.teams.forEach((team,teamId)=>team.forEach((p,i)=>p.__index=i));
   game.score=[0,0]; game.time=0; game.phase='kickoff_ready'; game.phaseTimer=1.5; game.lastTouchTeam=0; game.matchDone=false; game.messageTimer=0;
-  game.ball={x:FIELD.x+FIELD.w/2,y:FIELD.y+FIELD.h/2,vx:0,vy:0,owner:null,ownerOffset:5,looseTimer:0};
+  game.ball={x:FIELD.x+FIELD.w/2,y:FIELD.y+FIELD.h/2,vx:0,vy:0,owner:null,ownerOffset:5,looseTimer:0,claimLock:0};
   game.lastAiPass={team:-1,from:-1,to:-1,time:-999};
   setKickoffPositions(0); updateHUD();
   setTimeout(sndWhistle, 500); // Initial match whistle
@@ -170,8 +190,8 @@ function resetMatch(){
 function setStatus(msg,t=1.2){statusEl.textContent=msg; game.messageTimer=t}
 function nearestPlayable(team,target){let best=1, bestD=1e9; game.teams[team].forEach((p,i)=>{if(p.gk)return; const d=dist(p,target); if(d<bestD){bestD=d; best=i;}}); return best}
 function getControlledPlayer(){const team=game.teams[game.userTeam]; const idx=nearestPlayable(game.userTeam,game.ball.owner||game.ball); game.controlled=idx; return team[idx]}
-function setBallOwner(p){if(game.ball.owner&&game.ball.owner!==p)game.ball.owner.holdBall=false; game.ball.owner=p; p.holdBall=true; p.stealLock=Math.max(p.stealLock,0.55); p.decisionCooldown=Math.max(p.decisionCooldown||0,0.18); game.ball.vx=0; game.ball.vy=0; game.ball.looseTimer=0; game.lastTouchTeam=p.team}
-function releaseBall(){if(game.ball.owner)game.ball.owner.holdBall=false; game.ball.owner=null; game.ball.looseTimer=0.35}
+function setBallOwner(p){if(game.ball.owner&&game.ball.owner!==p)game.ball.owner.holdBall=false; game.ball.owner=p; p.holdBall=true; p.stealLock=Math.max(p.stealLock,0.55); p.decisionCooldown=Math.max(p.decisionCooldown||0,0.18); game.ball.vx=0; game.ball.vy=0; game.ball.looseTimer=0; game.ball.claimLock=0; game.lastTouchTeam=p.team}
+function releaseBall(){if(game.ball.owner)game.ball.owner.holdBall=false; game.ball.owner=null; game.ball.looseTimer=0.35; game.ball.claimLock=Math.max(game.ball.claimLock||0,0)}
 function syncOwnedBall(){if(!game.ball.owner)return; const p=game.ball.owner; const front=game.ball.ownerOffset+clamp(len(p.vx,p.vy)*0.03,0.5,1.8); game.ball.x=p.x+Math.cos(p.facing)*front; game.ball.y=p.y+Math.sin(p.facing)*front}
 function freezePlayer(p){p.vx=0; p.vy=0;}
 function kickoffActiveOwner(){
@@ -187,7 +207,7 @@ function setKickoffPositions(team){
       p.x = p.team===0 ? Math.min(p.x,halfLimit) : Math.max(p.x,halfLimit);
     }
   }
-  game.ball.x=midX; game.ball.y=FIELD.y+FIELD.h/2; game.ball.vx=0; game.ball.vy=0; game.ball.owner=null; game.ball.looseTimer=0;
+  game.ball.x=midX; game.ball.y=FIELD.y+FIELD.h/2; game.ball.vx=0; game.ball.vy=0; game.ball.owner=null; game.ball.looseTimer=0; game.ball.claimLock=0;
   const starter=team===0?game.teams[0][9]:game.teams[1][9];
   const partner=team===0?game.teams[0][10]:game.teams[1][10];
   starter.x=midX-teamDir(team)*7; starter.y=game.ball.y;
@@ -202,11 +222,13 @@ function moveTowards(p,tx,ty,maxSpeed,dt,ease=0.14){const n=norm(tx-p.x,ty-p.y);
 function moveDirect(p,move,speed,dt){p.vx=lerp(p.vx,move.x*speed,move.d>0?0.22:0.12); p.vy=lerp(p.vy,move.y*speed,move.d>0?0.22:0.12); p.x=clamp(p.x+p.vx*dt,FIELD.x+2,FIELD.x+FIELD.w-2); p.y=clamp(p.y+p.vy*dt,FIELD.y+2,FIELD.y+FIELD.h-2); if(move.d>0)p.facing=Math.atan2(move.y,move.x)}
 function canClaimBall(p){
   if(game.ball.owner || p.stealLock>0) return false;
+  if((game.ball.claimLock||0)>0) return false;
   const d=dist(p,game.ball);
   const speed=len(game.ball.vx,game.ball.vy);
-  if(d<8) return true;
+  if(speed>168) return false;
+  if(d<7 && speed<112) return true;
   if(game.ball.looseTimer>0.08) return false;
-  return d<14 && speed<165;
+  return d<13 && speed<150;
 }
 function attemptTackle(challenger){
   if(!game.ball.owner || game.ball.owner.team===challenger.team) return false;
@@ -218,7 +240,7 @@ function attemptTackle(challenger){
   releaseBall();
   game.ball.x=owner.x+poke.x*5; game.ball.y=owner.y+poke.y*5;
   game.ball.vx=(poke.x*34)+(momentum.x*18); game.ball.vy=(poke.y*34)+(momentum.y*18);
-  owner.stealLock=0.45; challenger.stealLock=0.22; game.lastTouchTeam=challenger.team; game.ball.looseTimer=0.12;
+  owner.stealLock=0.45; challenger.stealLock=0.22; game.lastTouchTeam=challenger.team; game.ball.looseTimer=0.12; game.ball.claimLock=0.06;
   return true;
 }
 function kickBall(p,power,tx,ty){
@@ -226,41 +248,92 @@ function kickBall(p,power,tx,ty){
   p.facing=Math.atan2(aim.y,aim.x);
   releaseBall();
   game.ball.x=p.x+aim.x*7; game.ball.y=p.y+aim.y*7; game.ball.vx=aim.x*power; game.ball.vy=aim.y*power;
-  p.stealLock=0.18; game.ball.looseTimer=0.08; game.lastTouchTeam=p.team;
+  p.stealLock=0.18; game.ball.looseTimer=0.08; game.ball.claimLock=0.16; game.lastTouchTeam=p.team;
+  beginOpenPlay();
+}
+function kickLooseBall(p,power){
+  const aim={x:Math.cos(p.facing), y:Math.sin(p.facing)};
+  if(game.ball.owner && game.ball.owner!==p){
+    game.ball.owner.holdBall=false;
+  }
+  game.ball.owner=null;
+  game.ball.x += aim.x*4;
+  game.ball.y += aim.y*4;
+  game.ball.vx=aim.x*power;
+  game.ball.vy=aim.y*power;
+  p.stealLock=0.16;
+  game.ball.looseTimer=0.12;
+  game.ball.claimLock=0.18;
+  game.lastTouchTeam=p.team;
+  beginOpenPlay();
+}
+function kickAnyBall(p,power){
+  const aim={x:Math.cos(p.facing), y:Math.sin(p.facing)};
+  const owner=game.ball.owner;
+  if(owner && owner!==p){
+    owner.holdBall=false;
+    owner.stealLock=Math.max(owner.stealLock||0,0.1);
+  }
+  game.ball.owner=null;
+  const anchorDist=dist(p,game.ball);
+  const anchor=clamp(anchorDist,0,14);
+  game.ball.x=p.x+aim.x*(anchor+6);
+  game.ball.y=p.y+aim.y*(anchor+6);
+  game.ball.vx=aim.x*power;
+  game.ball.vy=aim.y*power;
+  p.stealLock=0.16;
+  game.ball.looseTimer=0.18;
+  game.ball.claimLock=0.34;
+  game.lastTouchTeam=p.team;
   beginOpenPlay();
 }
 
 function angleWrap(a){while(a>Math.PI)a-=Math.PI*2; while(a<-Math.PI)a+=Math.PI*2; return a}
 function heldKickPower(heldMs){
   const t=clamp(heldMs,40,700);
-  return clamp(60 + t*0.12, 64, 144);
+  return clamp(172 + t*0.40, 184, 380);
 }
 function facingKickAim(actor,heldMs){
   const facing=actor.facing;
   const power=heldKickPower(heldMs);
   const forward={x:Math.cos(facing), y:Math.sin(facing)};
-  const maxTurn=heldMs<220 ? 0.42 : 0.24;
-  let best=null, bestScore=-1e9;
-  for(const mate of game.teams[actor.team]){
-    if(mate===actor || mate.gk) continue;
-    const dx=mate.x-actor.x, dy=mate.y-actor.y;
-    const d=Math.hypot(dx,dy);
-    if(d<10 || d>150) continue;
-    const ang=Math.atan2(dy,dx);
-    const delta=Math.abs(angleWrap(ang-facing));
-    if(delta>maxTurn) continue;
-    const forwardness=(dx*forward.x + dy*forward.y)/Math.max(1,d);
-    const progress=(mate.x-actor.x)*teamDir(actor.team);
-    const pressure=linePressure(actor.team,actor,mate);
-    const score=forwardness*2.2 + progress*0.03 - delta*18 - pressure*1.6 - d*0.015;
-    if(score>bestScore){bestScore=score; best=mate;}
-  }
-  if(best){
-    const lead=leadTarget(actor,best,actor.team,clamp(8+power*0.06,10,18));
-    return {x:lead.x,y:lead.y,power};
-  }
-  const travel=clamp(power*0.72,42,110);
+  const travel=clamp(power*1.15,110,340);
   return {x:actor.x+forward.x*travel,y:actor.y+forward.y*travel,power};
+}
+
+function bestUserKickActor(preferredActor=null){
+  if(!game || !game.teams || typeof game.userTeam!=='number') return null;
+  if(game.ball.owner && game.ball.owner.team===game.userTeam) return game.ball.owner;
+  const team=game.teams[game.userTeam]||[];
+  if(!team.length) return null;
+  const controlled=getControlledPlayer();
+  if(controlled && dist(controlled,game.ball)<=26) return controlled;
+  if(preferredActor && preferredActor.team===game.userTeam && dist(preferredActor,game.ball)<=26) return preferredActor;
+  let nearest=team[0], nearestDist=dist(team[0],game.ball);
+  for(const p of team){
+    const d=dist(p,game.ball);
+    if(d<nearestDist){ nearest=p; nearestDist=d; }
+  }
+  return nearest;
+}
+function attemptUserKick(heldMs, preferredActor=null, queueIfMiss=false){
+  if(!game || !['live','kickoff','setpiece'].includes(game.phase)) return false;
+  const kickActor=bestUserKickActor(preferredActor);
+  if(!kickActor) return false;
+  const kickReach=26;
+  const canKickNow=(game.ball.owner===kickActor) || (game.ball.owner && game.ball.owner.team===game.userTeam) || (dist(kickActor,game.ball)<=kickReach);
+  if(!canKickNow){
+    if(queueIfMiss){
+      pendingUserKick={held:heldMs, source:'release', actor:preferredActor||kickActor, expires:performance.now()+220};
+    }
+    return false;
+  }
+  const actualActor=(game.ball.owner && game.ball.owner.team===game.userTeam) ? game.ball.owner : kickActor;
+  const kick=facingKickAim(actualActor,heldMs);
+  kickAnyBall(actualActor,kick.power);
+  setStatus('Kick',0.25);
+  pendingUserKick=null;
+  return true;
 }
 
 function pointToSegmentDistance(px,py,ax,ay,bx,by){
@@ -290,8 +363,8 @@ function leadTarget(from,to,teamId,lead=10){
 function shootTarget(p){
   const goal=goalPosts(p.team===0?1:0);
   const centerY=FIELD.y+FIELD.h/2;
-  const bias=clamp((centerY-p.y)*0.35,-12,12);
-  return {x:goal.x,y:clamp(p.y+bias,goal.y1+7,goal.y2-7)};
+  const bias=clamp((centerY-p.y)*0.22,-8,8);
+  return {x:goal.x,y:clamp(p.y+bias,goal.y1+5,goal.y2-5)};
 }
 function passTarget(teamId,from,opts={}){
   const mates=game.teams[teamId].filter(p=>!p.gk && p!==from);
@@ -300,13 +373,13 @@ function passTarget(teamId,from,opts={}){
     const progress=(p.x-from.x)*teamDir(teamId);
     const lateral=Math.abs(p.y-from.y);
     const d=dist(from,p);
-    if(d<18 || d>150) continue;
+    if(d<18 || d>178) continue;
     const pressure=linePressure(teamId,from,p);
     const nearestOpp=Math.min(...game.teams[1-teamId].filter(op=>!op.gk).map(op=>dist(op,p)));
     let score=progress*2.1 - lateral*0.18 - d*0.03 + nearestOpp*1.1 - pressure*1.8;
     if(opts.safe) score += Math.max(0,18-progress)*0.7;
     if(opts.forwardOnly && progress<8) score -= 90;
-    if(progress>22) score += 14;
+    if(progress>22) score += 18;
     if(Math.abs(p.y-from.y)>36 && progress<12) score -= 12;
     if(game.lastAiPass.team===teamId && game.lastAiPass.from===p.__index && game.lastAiPass.to===from.__index && game.time-game.lastAiPass.time<5) score -= 110;
     if(score>bestScore){bestScore=score; best=p;}
@@ -318,23 +391,34 @@ function shouldAiPass(carrier){
   const nearest=Math.min(...opponents.map(op=>dist(op,carrier)));
   const towardGoal=(carrier.team===0?FIELD.x+FIELD.w-carrier.x:carrier.x-FIELD.x);
   const centralBias=Math.abs(carrier.y-(FIELD.y+FIELD.h/2));
-  return nearest<24 || towardGoal>150 || (towardGoal<165 && centralBias>34);
+  return (nearest<16 && towardGoal>88) || (nearest<12) || (towardGoal>210 && centralBias>26);
 }
+function hasShotLane(carrier){
+  const target=shootTarget(carrier);
+  return linePressure(carrier.team,carrier,target) < 18;
+}
+function shouldAiDrive(carrier){
+  const towardGoal=(carrier.team===0?FIELD.x+FIELD.w-carrier.x:carrier.x-FIELD.x);
+  const nearestDef=Math.min(...game.teams[1-carrier.team].filter(p=>!p.gk).map(op=>dist(op,carrier)));
+  return towardGoal>72 && (nearestDef>9 || towardGoal<165);
+}
+
 function shouldAiShoot(carrier){
   const target=shootTarget(carrier);
   const distToGoal=Math.hypot(target.x-carrier.x,target.y-carrier.y);
   const centralBias=Math.abs(carrier.y-(FIELD.y+FIELD.h/2));
   const nearestDef=Math.min(...game.teams[1-carrier.team].filter(p=>!p.gk).map(op=>dist(op,carrier)));
-  return distToGoal<118 && centralBias<68 && nearestDef>9;
+  return distToGoal<240 && centralBias<88 && (nearestDef>5 || distToGoal<150) && hasShotLane(carrier);
 }
 function driveTarget(carrier){
   const centerY=FIELD.y+FIELD.h/2;
   const goalX=carrier.team===0?FIELD.x+FIELD.w:FIELD.x;
   const toGoal=norm(goalX-carrier.x, centerY-carrier.y);
-  const laneOffset=(carrier.homeY-centerY)*0.16;
+  const laneOffset=(carrier.homeY-centerY)*0.08;
+  const attackBias=carrier.team===0 ? Math.max(0, carrier.x-(FIELD.x+FIELD.w*0.38)) : Math.max(0, (FIELD.x+FIELD.w*0.62)-carrier.x);
   return {
-    x:clamp(carrier.x+toGoal.x*34,FIELD.x+8,FIELD.x+FIELD.w-8),
-    y:clamp(carrier.y+toGoal.y*18+laneOffset,FIELD.y+10,FIELD.y+FIELD.h-10)
+    x:clamp(carrier.x+toGoal.x*(58+attackBias*0.10),FIELD.x+8,FIELD.x+FIELD.w-8),
+    y:clamp(carrier.y+toGoal.y*12+laneOffset,FIELD.y+10,FIELD.y+FIELD.h-10)
   };
 }
 function bestForwardRun(teamId,from){
@@ -343,11 +427,11 @@ function bestForwardRun(teamId,from){
     if(p.gk || p===from) continue;
     const progress=(p.x-from.x)*teamDir(teamId);
     const d=dist(from,p);
-    if(progress<16 || d<20 || d>165) continue;
+    if(progress<14 || d<20 || d>190) continue;
     const target=leadTarget(from,p,teamId,18);
     const pressure=linePressure(teamId,from,target);
     const nearestOpp=Math.min(...game.teams[1-teamId].filter(op=>!op.gk).map(op=>dist(op,target)));
-    const score=progress*2.7 + nearestOpp*1.2 - pressure*1.9 - Math.abs(p.y-from.y)*0.12;
+    const score=progress*3.1 + nearestOpp*1.2 - pressure*1.8 - Math.abs(p.y-from.y)*0.10;
     if(score>bestScore){bestScore=score; best={mate:p,target};}
   }
   return best;
@@ -363,7 +447,7 @@ function beginOpenPlay(){
 function getFormationAnchor(p, attackMode) {
   const ballShiftX = (game.ball.x - (FIELD.x + FIELD.w/2)) * 0.4;
   const ballShiftY = (game.ball.y - (FIELD.y + FIELD.h/2)) * 0.3;
-  const attackPush = attackMode ? teamDir(p.team)*30 : -teamDir(p.team)*15;
+  const attackPush = attackMode ? teamDir(p.team)*54 : -teamDir(p.team)*10;
   return {
     x: clamp(p.homeX + ballShiftX + attackPush, FIELD.x+10, FIELD.x+FIELD.w-10),
     y: clamp(p.homeY + ballShiftY, FIELD.y+10, FIELD.y+FIELD.h-10)
@@ -380,23 +464,27 @@ function updateSupportPlayer(p,dt,carrier,ctrl){
     const chaseOrder = game.teams[p.team].filter(tp=>!tp.gk).sort((a,b)=>dist(a,game.ball.owner||game.ball)-dist(b,game.ball.owner||game.ball)).map(tp=>tp.__index);
     const primary=chaseOrder[0], secondary=chaseOrder[1];
     if(p.__index===primary && game.phase==='live'){
-      moveTowards(p,(game.ball.owner||game.ball).x,(game.ball.owner||game.ball).y,38,dt,0.18);
+      moveTowards(p,(game.ball.owner||game.ball).x,(game.ball.owner||game.ball).y,40,dt,0.18);
     } else if(p.__index===secondary && game.ball.owner && game.ball.owner.team!==p.team){
-      const blockX=game.ball.owner.x-teamDir(p.team)*12;
+      const blockX=game.ball.owner.x-teamDir(p.team)*14;
       const blockY=lerp(game.ball.owner.y,FIELD.y+FIELD.h/2,0.25);
-      moveTowards(p,blockX,blockY,26,dt,0.12);
+      moveTowards(p,blockX,blockY,29,dt,0.12);
     } else {
       const anchor = getFormationAnchor(p, false);
-      moveTowards(p,anchor.x,anchor.y,22,dt,0.10);
+      moveTowards(p,anchor.x,anchor.y,24,dt,0.10);
     }
     if(game.phase==='live' && game.ball.owner && game.ball.owner.team!==p.team) attemptTackle(p);
   } else if(carrier===p){
     const target=driveTarget(p);
-    moveTowards(p,target.x,target.y,36,dt,0.16);
+    moveTowards(p,target.x,target.y,38,dt,0.17);
     syncOwnedBall();
   } else {
     const anchor = getFormationAnchor(p, true);
-    moveTowards(p,anchor.x,anchor.y,24,dt,0.12);
+    const centerY=FIELD.y+FIELD.h/2;
+    const lane=(p.homeY-centerY)*0.30;
+    const attackX=clamp(anchor.x + teamDir(p.team)*(carrier && carrier!==p ? 10 : 0), FIELD.x+10, FIELD.x+FIELD.w-10);
+    const attackY=clamp(lerp(anchor.y, centerY+lane, 0.45), FIELD.y+10, FIELD.y+FIELD.h-10);
+    moveTowards(p,attackX,attackY,28,dt,0.13);
   }
 }
 function updateUserTeam(dt){
@@ -427,14 +515,8 @@ function updateUserTeam(dt){
   const actor=(game.ball.owner && game.ball.owner.team===game.userTeam)?game.ball.owner:ctrl;
 
   if(pendingUserKick){
-    const userCarrier=(game.ball.owner && game.ball.owner.team===game.userTeam)?game.ball.owner:null;
-    if(userCarrier && (game.phase==='live' || game.phase==='kickoff' || game.phase==='setpiece')){
-      const actor=userCarrier;
-      const kick=facingKickAim(actor,pendingUserKick.held);
-      kickBall(actor,kick.power,kick.x,kick.y);
-      setStatus(pendingUserKick.held>=240?'Shot':'Pass',0.3);
-    }
-    pendingUserKick = null;
+    const ok=attemptUserKick(pendingUserKick.held, pendingUserKick.actor || actor, false);
+    if(ok || performance.now()>(pendingUserKick.expires||0)) pendingUserKick = null;
   }
 }
 
@@ -457,7 +539,7 @@ function updateAITeam(teamId,dt){
         const outlet=passTarget(p.team,p,{safe:true}) || passTarget(p.team,p);
         if(outlet){
           const lead=leadTarget(p,outlet,p.team,8);
-          kickBall(p,72,lead.x,lead.y);
+          kickBall(p,116,lead.x,lead.y);
           p.decisionCooldown=0.8;
         }
       }
@@ -466,47 +548,57 @@ function updateAITeam(teamId,dt){
     if(carrier===p){
       const target=driveTarget(p);
       const nearestOpp=Math.min(...game.teams[1-p.team].filter(op=>!op.gk).map(op=>dist(op,p)));
-      moveTowards(p,target.x,target.y,37,dt,0.15);
+      const progressToGoal=(p.team===0?FIELD.x+FIELD.w-p.x:p.x-FIELD.x);
+      moveTowards(p,target.x,target.y,40,dt,0.16);
       syncOwnedBall();
       if((game.phase==='live' || game.phase==='kickoff' || game.phase==='setpiece') && p.aiDecision<=0 && p.decisionCooldown<=0){
         const run=bestForwardRun(p.team,p);
         const mate=passTarget(p.team,p,{forwardOnly:false});
+        const shotNow=shouldAiShoot(p);
+        const passNow=shouldAiPass(p);
+        const driveNow=shouldAiDrive(p);
         if(game.phase==='kickoff'){
-          const startAim=run?.target || (mate ? leadTarget(p,mate,p.team,14) : null) || driveTarget(p);
-          kickBall(p,88,startAim.x,startAim.y);
+          const startAim=run?.target || driveTarget(p);
+          kickBall(p,168,startAim.x,startAim.y);
           if(run?.mate) game.lastAiPass={team:p.team,from:p.__index,to:run.mate.__index,time:game.time};
-          p.aiDecision=0.45;
-        } else if(shouldAiShoot(p) && (nearestOpp>8 || Math.abs(p.y-(FIELD.y+FIELD.h/2))<40 || progressToGoal<96)){
+          p.aiDecision=0.34;
+        } else if(shotNow){
           const shot=shootTarget(p);
-          kickBall(p,108,shot.x,shot.y);
-          p.aiDecision=0.68;
-        } else if(run && (nearestOpp<30 || shouldAiPass(p) || progressToGoal<150 || Math.random()<0.82)){
-          kickBall(p,90,run.target.x,run.target.y);
+          kickBall(p,260,shot.x,shot.y);
+          p.aiDecision=0.56;
+        } else if(driveNow && !passNow){
+          p.aiDecision=0.18;
+          p.decisionCooldown=0.05;
+        } else if(run && (passNow || nearestOpp<12) && progressToGoal>82){
+          kickBall(p,148,run.target.x,run.target.y);
           game.lastAiPass={team:p.team,from:p.__index,to:run.mate.__index,time:game.time};
-          p.aiDecision=0.32;
-        } else if(mate && (shouldAiPass(p) || nearestOpp<34 || Math.random()<0.68)){
-          const lead=leadTarget(p,mate,p.team,16);
-          kickBall(p,90,lead.x,lead.y);
+          p.aiDecision=0.22;
+        } else if(mate && passNow && progressToGoal>96){
+          const lead=leadTarget(p,mate,p.team,20);
+          kickBall(p,138,lead.x,lead.y);
           game.lastAiPass={team:p.team,from:p.__index,to:mate.__index,time:game.time};
-          p.aiDecision=0.28;
+          p.aiDecision=0.20;
+        } else if(run && progressToGoal>110){
+          kickBall(p,154,run.target.x,run.target.y);
+          game.lastAiPass={team:p.team,from:p.__index,to:run.mate.__index,time:game.time};
+          p.aiDecision=0.24;
         } else {
-          const directShot=shootTarget(p);
-          kickBall(p,96,directShot.x,directShot.y);
-          p.aiDecision=0.42;
+          p.aiDecision=0.16;
+          p.decisionCooldown=0.05;
         }
       }
       continue;
     }
     if(!carrier && i===chaserIndex && game.phase==='live'){
-      moveTowards(p,game.ball.x,game.ball.y,48,dt,0.22);
+      moveTowards(p,game.ball.x,game.ball.y,50,dt,0.22);
     } else if(carrier && carrier.team!==p.team && i===chaserIndex && game.phase==='live'){
-      moveTowards(p,carrier.x,carrier.y,46,dt,0.22);
+      moveTowards(p,carrier.x,carrier.y,48,dt,0.22);
       if(game.ball.owner && game.ball.owner.team!==p.team) attemptTackle(p);
     } else if(carrier && carrier.team!==p.team && i===supportPressIndex && game.phase==='live'){
-      moveTowards(p,carrier.x-teamDir(p.team)*14,lerp(carrier.y,FIELD.y+FIELD.h/2,0.28),33,dt,0.16);
+      moveTowards(p,carrier.x-teamDir(p.team)*16,lerp(carrier.y,FIELD.y+FIELD.h/2,0.28),35,dt,0.16);
     } else {
       const anchor = getFormationAnchor(p, !!carrier);
-      moveTowards(p,anchor.x,anchor.y,!!carrier?25:20,dt,0.11);
+      moveTowards(p,anchor.x,anchor.y,!!carrier?27:22,dt,0.11);
     }
     if(canClaimBall(p)) setBallOwner(p);
   }
@@ -535,9 +627,10 @@ function scoreGoal(team){
 }
 function updateBall(dt){
   if(game.ball.looseTimer>0) game.ball.looseTimer=Math.max(0,game.ball.looseTimer-dt);
+  if((game.ball.claimLock||0)>0) game.ball.claimLock=Math.max(0,game.ball.claimLock-dt);
   if(!game.ball.owner){
     game.ball.x += game.ball.vx*dt; game.ball.y += game.ball.vy*dt;
-    const friction=Math.pow(0.962,dt*60); game.ball.vx*=friction; game.ball.vy*=friction;
+    const friction=Math.pow(0.9885,dt*60); game.ball.vx*=friction; game.ball.vy*=friction;
     
     // Bounds Check & Audio Bounce
     if (game.ball.y < FIELD.y - 10 || game.ball.y > FIELD.y + FIELD.h + 10 || game.ball.x < FIELD.x - 10 || game.ball.x > FIELD.x + FIELD.w + 10) {
@@ -546,7 +639,7 @@ function updateBall(dt){
       if (Math.random() < 0.05) sndBounce();
     }
 
-    if(Math.abs(game.ball.vx)<1.5) game.ball.vx=0; if(Math.abs(game.ball.vy)<1.5) game.ball.vy=0;
+    if(Math.abs(game.ball.vx)<1.1) game.ball.vx=0; if(Math.abs(game.ball.vy)<1.1) game.ball.vy=0;
   } else syncOwnedBall();
 
   if(!game.ball.owner){
@@ -649,6 +742,7 @@ document.getElementById('toLineups').onclick=()=>showScreen('lineups');
 document.getElementById('playImo').onclick=()=>{game.userTeam=0; showScreen('rules')};
 document.getElementById('playRow').onclick=()=>{game.userTeam=1; showScreen('rules')};
 document.getElementById('kickOffBtn').onclick=()=>{resetMatch(); showScreen('wrap'); fitCanvas(); focusGame()};
+window.addEventListener('pointerdown',()=>focusGame(),{passive:true});
 document.getElementById('playAgain').onclick=()=>{resetMatch(); showScreen('wrap'); fitCanvas(); focusGame()};
 const loadingSteps=['Preparing pitch...','Painting stripes...','Assigning lineups...','Booting match engine...']; let li=0; const loadInt=setInterval(()=>{loadText.textContent=loadingSteps[li]||'Ready'; li++; if(li>loadingSteps.length){clearInterval(loadInt); showScreen('intro')}},320);
 requestAnimationFrame(loop);
