@@ -398,6 +398,231 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   navHints.appendChild(hintRight);
   mount.appendChild(navHints);
 
+  // ============================================================
+  // EASTER EGG — Football goal hotspot (pitch_bg_01, desktop only)
+  // ============================================================
+
+  // Goal region as fractions of image dimensions.
+  // Generous hitbox so the user can actually find it.
+  const GOAL_REGION = { x1: 0.04, y1: 0.21, x2: 0.32, y2: 0.57 };
+
+  // Inject Press Start 2P (retro pixel font) + blink keyframe
+  (function injectGoalStyles() {
+    if (document.getElementById("epGoalStyle")) return;
+    const s = document.createElement("style");
+    s.id = "epGoalStyle";
+    s.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+      @keyframes epGoalBlink { 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+    `;
+    (document.head || document.documentElement).appendChild(s);
+  })();
+
+  // Video + hint popup (shown on goal hover)
+  const goalPopup = document.createElement("div");
+  goalPopup.style.cssText = `
+    position: absolute;
+    pointer-events: none;
+    z-index: 2147480300;
+    opacity: 0;
+    transition: opacity 220ms ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 260px;
+  `;
+
+  const goalVideo = document.createElement("video");
+  goalVideo.src = "soccer/calcio_photos.mp4";
+  goalVideo.muted = true;
+  goalVideo.loop = true;
+  goalVideo.playsInline = true;
+  goalVideo.style.cssText = `
+    width: 100%;
+    border-radius: 5px;
+    border: 2px solid rgba(255,255,255,0.55);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.65);
+    display: block;
+  `;
+
+  const goalHint = document.createElement("div");
+  goalHint.textContent = "▶ CLICK TO PLAY";
+  goalHint.style.cssText = `
+    font-family: 'Press Start 2P', ui-monospace, monospace;
+    font-size: 9px;
+    color: rgba(255, 236, 100, 0.95);
+    text-shadow: 0 0 10px rgba(255,200,0,0.75), 1px 1px 0 rgba(0,0,0,0.9);
+    letter-spacing: 1.5px;
+    text-align: center;
+    animation: epGoalBlink 1s steps(1) infinite;
+  `;
+
+  goalPopup.appendChild(goalVideo);
+  goalPopup.appendChild(goalHint);
+  mount.appendChild(goalPopup);
+
+  // Soccer game overlay (iframe)
+  const soccerOverlay = document.createElement("div");
+  soccerOverlay.style.cssText = `
+    position: absolute;
+    inset: 0;
+    z-index: 2147481500;
+    background: #000;
+    display: none;
+  `;
+
+  const soccerIframe = document.createElement("iframe");
+  soccerIframe.style.cssText = `
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  `;
+  soccerIframe.allowFullscreen = true;
+
+  const soccerCloseBtn = document.createElement("button");
+  soccerCloseBtn.type = "button";
+  soccerCloseBtn.textContent = "✕";
+  soccerCloseBtn.style.cssText = `
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    z-index: 10;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.88);
+    font-family: ui-monospace, monospace;
+    font-size: 16px;
+    line-height: 1;
+    padding: 7px 13px;
+    border-radius: 7px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 140ms ease;
+  `;
+  soccerCloseBtn.addEventListener("pointerenter", () => {
+    soccerCloseBtn.style.background = "rgba(0,0,0,0.80)";
+  });
+  soccerCloseBtn.addEventListener("pointerleave", () => {
+    soccerCloseBtn.style.background = "rgba(0,0,0,0.55)";
+  });
+
+  soccerOverlay.appendChild(soccerIframe);
+  soccerOverlay.appendChild(soccerCloseBtn);
+  mount.appendChild(soccerOverlay);
+
+  function openSoccerOverlay() {
+    soccerIframe.src = "soccer/index.html";
+    soccerOverlay.style.display = "block";
+    // Hide popup while game is open
+    goalPopup.style.opacity = "0";
+    goalVideo.pause();
+  }
+
+  function closeSoccerOverlay() {
+    soccerOverlay.style.display = "none";
+    soccerIframe.src = "";
+  }
+
+  soccerCloseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeSoccerOverlay();
+  });
+
+  // Soccer iframe can close itself via postMessage
+  window.addEventListener("message", (e) => {
+    if (e.data && e.data.type === "CLOSE_SOCCER_OVERLAY") closeSoccerOverlay();
+  });
+
+  // Compute where the goal region maps to on-screen,
+  // mirroring the exact drawBgAndGetFloorY transform.
+  function getGoalScreenRect(img, vw, vh, bgInfo) {
+    const iw = img.width, ih = img.height;
+    const scale = Math.max(vw / iw, vh / ih);
+    const dw = iw * scale, dh = ih * scale;
+    const dx = (vw - dw) * 0.5;
+    const dyCenter = (vh - dh) * 0.5;
+    const floorSrcY = (bgInfo && typeof bgInfo.blackBandStartY === "number")
+      ? bgInfo.blackBandStartY : ih;
+    const desiredDy = vh - (floorSrcY * scale);
+    const dyMin = vh - dh, dyMax = 0;
+    const dy = Math.min(dyMax, Math.max(dyMin, desiredDy, dyCenter));
+
+    return {
+      x1: dx + GOAL_REGION.x1 * dw,
+      y1: dy + GOAL_REGION.y1 * dh,
+      x2: dx + GOAL_REGION.x2 * dw,
+      y2: dy + GOAL_REGION.y2 * dh,
+    };
+  }
+
+  let goalHovered = false;
+
+  mount.addEventListener("mousemove", (e) => {
+    // Only active on the football screen and when assets are loaded
+    if (state.screenIndex !== 1 || !loadedAssets) {
+      if (goalHovered) {
+        goalHovered = false;
+        goalPopup.style.opacity = "0";
+        goalVideo.pause();
+        mount.style.cursor = "";
+      }
+      return;
+    }
+
+    const screen = loadedAssets.screens[1];
+    if (!screen || !screen.img) return;
+
+    const { w, h } = getViewportSize();
+    const rect = getGoalScreenRect(screen.img, w, h, screen.bgInfo);
+
+    const mx = e.clientX, my = e.clientY;
+    const inside = mx >= rect.x1 && mx <= rect.x2 && my >= rect.y1 && my <= rect.y2;
+
+    if (inside && !goalHovered) {
+      goalHovered = true;
+      mount.style.cursor = "pointer";
+
+      // Position popup above the goal center, clamped to viewport
+      const goalCenterX = (rect.x1 + rect.x2) / 2;
+      const goalTopY = rect.y1;
+      const popupW = 260;
+      const popupLeft = Math.min(w - popupW - 12, Math.max(12, goalCenterX - popupW / 2));
+      const popupTop = Math.max(12, goalTopY - 180);
+
+      goalPopup.style.left = popupLeft + "px";
+      goalPopup.style.top = popupTop + "px";
+      goalPopup.style.opacity = "1";
+
+      goalVideo.currentTime = 0;
+      goalVideo.play().catch(() => {});
+    } else if (!inside && goalHovered) {
+      goalHovered = false;
+      mount.style.cursor = "";
+      goalPopup.style.opacity = "0";
+      goalVideo.pause();
+    }
+  });
+
+  // Also reset on mouse leaving the mount entirely
+  mount.addEventListener("mouseleave", () => {
+    if (goalHovered) {
+      goalHovered = false;
+      mount.style.cursor = "";
+      goalPopup.style.opacity = "0";
+      goalVideo.pause();
+    }
+  });
+
+  // Click on the goal area opens the game
+  mount.addEventListener("click", (e) => {
+    if (goalHovered && state.screenIndex === 1 && soccerOverlay.style.display === "none") {
+      openSoccerOverlay();
+    }
+  });
+
   // ==========================
   // Resize
   // ==========================
@@ -628,6 +853,9 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   const LANDING_INSET = 84;     // final stop position inside the new screen
   const ENRICO_FOOT_LIFT = 115;
   let last = performance.now();
+
+  // Easter egg: assets reference (set once loadAll resolves)
+  let loadedAssets = null;
 
   function redirectToAbout() {
     // If we are running inside the About overlay iframe, request the parent to close it.
@@ -935,6 +1163,7 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
 
   loadAll()
     .then((assets) => {
+      loadedAssets = assets;
       const vw = getViewportSize().w;
       state.screenIndex = 0;
       state.enrico.x = Math.round(vw * 0.25);
