@@ -163,6 +163,16 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   `;
   document.body.appendChild(mount);
 
+  // Make mount focusable so keyboard events can fire without requiring a click on the document body
+  mount.tabIndex = 0;
+  mount.style.outline = "none";
+  mount.setAttribute("role", "application");
+  const __focusMount = () => {
+    try { mount.focus({ preventScroll: true }); } catch (_) { try { mount.focus(); } catch(__) {} }
+  };
+  // Best-effort autofocus (may be ignored by browsers/iframes until a user gesture)
+  setTimeout(__focusMount, 0);
+
   // Ensure Squarespace header stays on top (if present)
   (function liftSquarespaceHeader(){
     const headerEls = [
@@ -290,7 +300,7 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
     z-index: 2147480100;
     pointer-events: none;
   `;
-  hud.innerHTML = `<b>Controls</b><br>Enrico: ← / →`;
+  hud.innerHTML = `<b>Controls</b><br>Enrico: ← / →<br><span style="opacity:0.85;">Click to activate controls</span>`;
   mount.appendChild(hud);
 
   // ==========================
@@ -664,6 +674,9 @@ Same stubborness, do not doubt. Even worse, actually, cause I'm significantly ol
   document.addEventListener("pointerdown", (e) => {
     // Only react if the experience is mounted
     if (!mount.isConnected) return;
+
+    // Ensure this iframe/document receives keyboard focus
+    __focusMount();
 
     const t = e.target;
 
