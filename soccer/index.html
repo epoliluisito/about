@@ -58,12 +58,14 @@ button:hover{background:linear-gradient(180deg,#1d421d,#102010)}
 <div id="s-rules" class="screen hidden"><div class="box" style="max-width:700px"><div class="head">Match rules</div><div class="note">Arrows or WASD to move. Space is the only active button: it always kicks the ball in the direction the current player is facing, whether it is loose or at a player's feet. Hold time sets kick strength. There is no teammate targeting. When your goalkeeper has the ball, control switches to the goalkeeper so play never locks.<br><br>Restarts now follow football logic: throw-ins on the touchline, goal kicks when the attacking side last touched it behind the goal, corners when the defending side touched it out behind its own goal. Kick distance has been trimmed slightly from the previous build. Match clock is now a 90-second countdown.</div><div class="legend"><div class="dot d-red"></div><div>Imolese outfield kit</div><div class="dot d-gold"></div><div>Rest of the World outfield kit</div><div class="dot d-white"></div><div>Ball</div><div class="dot d-blue"></div><div>Keepers have distinct kits</div></div><div class="small">90 second match · one-match structure preserved · one-button football controls · auto player switching by proximity</div><div class="btnRow" style="margin-top:22px"><button class="gold" id="kickOffBtn">Kick Off</button></div></div></div>
 <div id="wrap" class="hidden"><div id="gameShell"><div id="hudTop"><div class="teamL">Imolese FC</div><div id="centerHud"><div id="time">00:00</div><div id="score">0-0</div><div id="phase">Kick Off</div></div><div class="teamR">Rest of the World</div></div><div id="gameFrame"><canvas id="gameCanvas" width="320" height="180" tabindex="0"></canvas></div><div id="status"></div></div></div>
 <div id="overlayFlash">Goal!</div>
-<div id="s-end" class="screen hidden"><div class="tag">Full time</div><div class="title" id="finalScore">0-0</div><div class="sub" id="finalText">Draw</div><div class="btnRow" style="margin-top:30px"><button class="gold" id="playAgain">Play again</button></div></div>
+<div id="s-end" class="screen hidden"><div class="tag">Full time</div><div class="title" id="finalScore">0-0</div><div class="sub" id="finalText">Draw</div><div class="btnRow" style="margin-top:30px"><button class="gold" id="playAgain">Play again</button><button id="changeTeam">Change team</button><button class="red" id="quitBtn">Quit</button></div></div>
+<div id="s-quit" class="screen hidden"><div class="tag">Are you sure?</div><div class="title" style="font-size:32px;margin-bottom:10px">Quit?</div><div class="btnRow" style="margin-top:30px"><button id="quitCancel">Cancel</button><button class="red" id="quitConfirm">Confirm quit</button><button class="gold" id="quitVideo">Quit with video</button></div></div>
+<div id="videoOverlay" style="position:fixed;inset:0;z-index:50;background:#000;display:none;align-items:center;justify-content:center"><video id="outroVideo" src="calcio_video.mp4" style="max-width:100%;max-height:100%;width:auto;height:auto;aspect-ratio:787/576;object-fit:contain" playsinline></video></div>
 
 <script>
 (() => {
 const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=false;
-const screens={load:document.getElementById('s-load'),intro:document.getElementById('s-intro'),lineups:document.getElementById('s-lineups'),rules:document.getElementById('s-rules'),wrap:document.getElementById('wrap'),end:document.getElementById('s-end')};
+const screens={load:document.getElementById('s-load'),intro:document.getElementById('s-intro'),lineups:document.getElementById('s-lineups'),rules:document.getElementById('s-rules'),wrap:document.getElementById('wrap'),end:document.getElementById('s-end'),quit:document.getElementById('s-quit')};
 const loadText=document.getElementById('loadText'),lineupImo=document.getElementById('lineupImo'),lineupRow=document.getElementById('lineupRow'),scoreEl=document.getElementById('score'),timeEl=document.getElementById('time'),phaseEl=document.getElementById('phase'),statusEl=document.getElementById('status'),overlayFlash=document.getElementById('overlayFlash'),finalScore=document.getElementById('finalScore'),finalText=document.getElementById('finalText');
 const VIEW_W=320, VIEW_H=180, WORLD={w:560,h:330}, FIELD={x:42,y:34,w:476,h:262}, GOAL={depth:10,width:62}, MATCH_SECONDS=90, DT_CAP=1/30, VIEW_SCALE_CAP=4;
 const GLOBAL_KICK_SCALE=0.9;
@@ -915,6 +917,14 @@ document.getElementById('playRow').onclick=()=>{game.userTeam=1; showScreen('rul
 document.getElementById('kickOffBtn').onclick=()=>{resetMatch(); showScreen('wrap'); fitCanvas(); focusGame()};
 window.addEventListener('pointerdown',()=>focusGame(),{passive:true});
 document.getElementById('playAgain').onclick=()=>{resetMatch(); showScreen('wrap'); fitCanvas(); focusGame()};
+document.getElementById('changeTeam').onclick=()=>showScreen('lineups');
+document.getElementById('quitBtn').onclick=()=>showScreen('quit');
+document.getElementById('quitCancel').onclick=()=>showScreen('end');
+document.getElementById('quitConfirm').onclick=()=>window.parent.postMessage({type:'CLOSE_SOCCER_OVERLAY'},'*');
+const outroVideo=document.getElementById('outroVideo');
+const videoOverlay=document.getElementById('videoOverlay');
+document.getElementById('quitVideo').onclick=()=>{videoOverlay.style.display='flex'; outroVideo.currentTime=0; outroVideo.play().catch(()=>{})};
+outroVideo.addEventListener('ended',()=>{videoOverlay.style.display='none'; window.parent.postMessage({type:'CLOSE_SOCCER_OVERLAY'},'*')});
 const loadingSteps=['Preparing pitch...','Painting stripes...','Assigning lineups...','Booting match engine...']; let li=0; const loadInt=setInterval(()=>{loadText.textContent=loadingSteps[li]||'Ready'; li++; if(li>loadingSteps.length){clearInterval(loadInt); showScreen('intro')}},320);
 requestAnimationFrame(loop);
 })();
